@@ -1,0 +1,196 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <title>Bulletins_{{ classe_nom }}_T{{ trimestre }}</title>
+    <link rel="icon" href="{% static 'acady.png' %}" type="image/png" />
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet" />
+    <style>
+        /* --- CONFIGURATION PDF & IMPRESSION --- */
+        @media print {
+            @page {
+                size: A4;
+                margin: 0;
+            }
+            body {
+                margin: 0;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            .no-print { display: none !important; }
+            .bulletin-page {
+                margin: 0 !important;
+                box-shadow: none !important;
+                page-break-after: always;
+                height: 297mm;
+            }
+            /* Assure l'affichage des images à l'impression */
+            img { display: block !important; }
+        }
+
+        /* --- STYLE AFFICHAGE ÉCRAN --- */
+        body { background-color: #525659; font-family: 'Times New Roman', Times, serif; }
+        
+        .bulletin-page {
+            background-color: white;
+            width: 210mm;
+            height: 297mm;
+            margin: 20px auto;
+            padding: 15mm !important;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* --- DESIGN DU BULLETIN --- */
+        .bulletin-header { border-bottom: 2px double #000; padding-bottom: 10px; margin-bottom: 15px; }
+        .header-img { width: 85px; height: 85px; object-fit: cover; }
+        .school-name { font-weight: 800; text-transform: uppercase; font-size: 1.2rem; }
+
+        .student-box {
+            display: flex; border: 1px solid #000; padding: 12px;
+            background: #fcfcfc; margin-bottom: 15px; font-size: 14px;
+        }
+
+        .table { border: 1px solid #000 !important; width: 100%; margin-bottom: 10px; }
+        .table thead th { background-color: #212529 !important; color: white !important; font-size: 11px; border: 1px solid #000 !important; }
+        .table td { border: 1px solid #000 !important; font-size: 12px; padding: 5px !important; }
+
+        .stats-bar {
+            display: flex; justify-content: space-between;
+            background: #f0f0f0 !important; border: 1.5px solid #000;
+            padding: 10px; font-weight: bold;
+        }
+
+        .obs-box { border: 1px solid #000; height: 50px; width: 100%; margin: 10px 0; }
+        .signature-area { display: flex; justify-content: space-between; margin-top: 20px; align-items: flex-start; }
+        .bottom-info { margin-top: auto; font-size: 10px; color: #777; display: flex; justify-content: space-between; border-top: 1px solid #eee; padding-top: 5px; }
+        
+        .signature-block { text-align: center; width: 45%; }
+        .signature-img-container { height: 80px; display: flex; align-items: center; justify-content: center; margin: 5px 0; }
+    </style>
+</head>
+<body>
+
+    <div class="text-center no-print py-4">
+        <button onclick="genererPDF()" class="btn btn-danger btn-lg shadow px-5">
+            📥 ENREGISTRER TOUS LES BULLETINS EN PDF
+        </button>
+    </div>
+
+    <div id="all-bulletins">
+        {% for item in liste_bulletins %}
+        <div class="bulletin-page">
+            <div class="bulletin-header d-flex align-items-center">
+                <div class="header-left">
+                    {% if profile_image %}<img src="{{ profile_image }}" class="header-img">{% endif %}
+                </div>
+                <div class="text-center flex-grow-1">
+                    <h4 class="school-name">{{ school_name }}</h4>
+                    <p class="small mb-1">Porto-Novo | Tel : {{ numero }}</p>
+                    <h5 class="bg-dark text-white d-inline-block px-4 py-1 mb-1">BULLETIN DE NOTES</h5>
+                    <p class="mb-0"><strong>{{ trimestre }}{% if trimestre == "1" %}<sup>er</sup>{% else %}<sup>ème</sup>{% endif %} Trimestre</strong></p>
+                </div>
+                <div class="header-right">
+                    {% if profile_image %}<img src="{{ profile_image }}" class="header-img">{% endif %}
+                </div>
+            </div>
+
+            <div class="student-box">
+                <div style="width: 65%;">
+                    <div><strong>Matricule :</strong> {{ item.eleve.matricule }}</div>
+                    <div><strong>Nom & Prénoms :</strong> <span class="fw-bold">{{ item.eleve.nom }} {{ item.eleve.prenoms }}</span></div>
+                    <div><strong>Né(e) le :</strong> {{ item.eleve.date_naissance|date:"d/m/Y" |default_if_none:""}}</div>
+                    <div><strong>Lieu :</strong> {{ item.eleve.lieu_naissance |default_if_none:""}}</div>
+                    <div>
+                        <strong>Sexe :</strong> 
+                        {% if item.eleve.sexe == 'M' or item.eleve.sexe == 'Masculin' %} Masculin
+                        {% elif item.eleve.sexe == 'F' or item.eleve.sexe == 'Féminin' %} Féminin
+                        {% else %} {{ item.eleve.sexe }} {% endif %}
+                    </div>
+                </div>
+                <div style="width: 35%;">
+                    <div><strong>Classe :</strong> {{ item.eleve.classe }} {% if item.eleve.serie %} {{ item.eleve.serie }} {% endif %}</div>
+                    <div><strong>Effectif :</strong> {{ total_eleve }} élèves</div>
+                    <div><strong>Année scolaire :</strong> {{ item.eleve.annee_academique }}</div>
+                </div>
+            </div>
+
+            <table class="table text-center table-striped">
+                <thead>
+                    <tr>
+                        <th class="text-start">Matières</th>
+                        <th>Moy. Int</th><th>Dev1</th><th>Dev2</th><th>Moy/20</th><th>Coef</th><th>M.Coef</th><th>Rang</th><th>Appréciations</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for matiere, details in item.matieres_status.items %}
+                    <tr>
+                        <td class="text-start fw-bold">{{ matiere }}</td>
+                        <td>{{ details.moyenne_interros|default:"-" }}</td>
+                        <td>{{ details.devoirs.0|default:"-" }}</td>
+                        <td>{{ details.devoirs.1|default:"-" }}</td>
+                        <td class="fw-bold bg-light">{{ details.moyenne_generale|floatformat:2 }}</td>
+                        <td>{{ details.coef }}</td>
+                        <td>{{ details.moyenne_coef|floatformat:2 }}</td>
+                        <td>{{ details.rang|default:"-" }}</td>
+                        <td class="small fst-italic">{{ details.appreciations }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <div class="stats-bar">
+                <span>MOYENNE TRIMESTRIELLE : {{ item.moyenne_trimestrielle|floatformat:2 }}</span>
+                <span>RANG : {{ item.rang_trimestriel }}</span>
+            </div>
+
+            <div class="footer-decisions">
+                <div class="border p-2 text-center mb-2" style="font-size: 12px; border: 1px solid #000 !important;">
+                    <strong>DÉCISION :</strong> ☐ Encouragement ☐ Félicitations ☐ Travail Insuffisant
+                </div>
+                <p class="mb-0 fw-bold small text-center">OBSERVATIONS DU DIRECTEUR :</p>
+                <div class="obs-box"></div>
+
+                <div class="signature-area">
+                    <!-- Bloc Professeur Principal -->
+                    <div class="signature-block">
+                        <p class="small mb-1 fst-italic">Le Professeur Principal</p>
+                        <div class="signature-img-container">
+                            {% if item.professeur_principal_obj.signature %}
+                                <img src="{{ item.professeur_principal_obj.signature.url }}" 
+                                     style="max-height: 80px; width: auto; mix-blend-mode: multiply;">
+                            {% endif %}
+                        </div>
+                        <p class="fw-bold mt-0">{{ item.professeur_principal|default:"" }}</p>
+                    </div>
+
+                    <!-- Bloc Directeur -->
+                    <div class="signature-block">
+                        <p class="small mb-1 fst-italic">Le Directeur</p>
+                        <div class="signature-img-container">
+                            <!-- Espace pour signature manuelle ou tampon -->
+                        </div>
+                        <p class="fw-bold mt-0">{{ name }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bottom-info">
+                <span>Généré par Acadynote</span>
+                <span>Édité le {% now "d/m/Y à H:i" %}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        function genererPDF() {
+            document.title = "Bulletins_{{ classe_nom }}_Trimestre_{{ trimestre }}";
+            window.print();
+        }
+    </script>
+</body>
+</html>

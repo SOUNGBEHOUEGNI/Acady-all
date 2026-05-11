@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="fr">
+{% load static %}
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" href="{% static 'acady.png' %}" type="image/png" />
+  <title>Acadynote | Modification</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <style>
+    :root { --primary-color: #0d6efd; --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); }
+    body { background: var(--bg-gradient); font-family: 'Segoe UI', sans-serif; min-height: 100vh; }
+    .form-container { background: #fff; padding: 40px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); max-width: 850px; margin: 40px auto; }
+    .profile-preview { width: 130px; height: 130px; object-fit: cover; border-radius: 50%; border: 4px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    .section-title { font-size: 1.1rem; font-weight: 700; border-bottom: 2px solid #e9ecef; padding-bottom: 10px; margin: 20px 0; display: flex; align-items: center; gap: 10px; }
+    .btn-save { background: var(--primary-color); padding: 12px 40px; border-radius: 10px; font-weight: 600; color: white; border: none; transition: 0.3s; }
+    .btn-save:hover { background: #0b5ed7; transform: translateY(-2px); }
+  </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm py-3">
+  <div class="container">
+    <a class="navbar-brand fw-bold" href="{% url 'accueil' %}">
+      <i class="bi bi-mortarboard-fill me-2"></i>{{ school_name }}
+    </a>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="form-container">
+    <div class="text-center mb-4">
+        {% if eleve.profile_eleve %}
+          <img src="{{ eleve.profile_eleve.url }}" class="profile-preview" id="imgView">
+        {% else %}
+          <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="profile-preview" id="imgView">
+        {% endif %}
+      <h4 class="fw-bold mt-3">Modifier l'élève</h4>
+      <p class="text-primary">{{ eleve.nom }} {{ eleve.prenoms }}</p>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+      
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-{% if message.tags == 'success' %}success{% else %}danger{% endif %} alert-dismissible fade show shadow-sm">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      <div class="row g-4">
+        <div class="col-12"><div class="section-title"><i class="bi bi-briefcase text-primary"></i> Scolarité</div></div>
+        
+        <div class="col-md-3">
+          <label class="form-label">Matricule</label>
+          <input type="text" class="form-control" name="matricule" value="{{ eleve.matricule|default:'' }}">
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Classe</label>
+          <select class="form-select" name="classe" id="classeSelect">
+            <optgroup label="Collège">
+                <option value="6ème" {% if eleve.classe == '6ème' %}selected{% endif %}>6ème</option>
+                <option value="5ème" {% if eleve.classe == '5ème' %}selected{% endif %}>5ème</option>
+                <option value="4ème" {% if eleve.classe == '4ème' %}selected{% endif %}>4ème</option>
+                <option value="3ème" {% if eleve.classe == '3ème' %}selected{% endif %}>3ème</option>
+            </optgroup>
+            <optgroup label="Lycée">
+                <option value="2nde" {% if eleve.classe == '2nde' %}selected{% endif %}>2nde</option>
+                <option value="1ère" {% if eleve.classe == '1ère' %}selected{% endif %}>1ère</option>
+                <option value="Tle" {% if eleve.classe == 'Tle' %}selected{% endif %}>Tle</option>
+            </optgroup>
+          </select>
+        </div>
+        
+        <div class="col-md-3" id="serieContainer">
+            <label class="form-label">Série</label>
+            <select class="form-select" name="serie" id="serieSelect">
+                <option value="Général" {% if eleve.serie == 'Général' %}selected{% endif %}>Général</option>
+                <option value="A1" {% if eleve.serie == 'A1' %}selected{% endif %}>A1</option>
+                <option value="A2" {% if eleve.serie == 'A2' %}selected{% endif %}>A2</option>
+                <option value="B" {% if eleve.serie == 'B' %}selected{% endif %}>B</option>
+                <option value="C" {% if eleve.serie == 'C' %}selected{% endif %}>C</option>
+                <option value="D" {% if eleve.serie == 'D' %}selected{% endif %}>D</option>
+            </select>
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Année Acad.</label>
+          <input type="text" class="form-control" name="annee_academique" value="{{ eleve.annee_academique }}" required>
+        </div>
+
+        <div class="col-md-6" id="langueCollegeDiv" style="display: none;">
+            <label class="form-label text-primary fw-bold">Langue de Spécialité (4è/3è)</label>
+            <select name="langue_specialite" class="form-select border-primary">
+                <option value="">-- Choisir --</option>
+                <option value="Espagnol" {% if eleve.langue_specialite == "Espagnol" %}selected{% endif %}>Espagnol</option>
+                <option value="Allemand" {% if eleve.langue_specialite == "Allemand" %}selected{% endif %}>Allemand</option>
+            </select>
+        </div>
+
+        <div class="col-md-12" id="langueLyceeDiv" style="display: none;">
+            <div class="row">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Langue Vivante 1 (LV1)</label>
+                    <select name="lv1" class="form-select">
+                        <option value="Anglais" {% if eleve.lv1 == "Anglais" %}selected{% endif %}>Anglais</option>
+                        <option value="Espagnol" {% if eleve.lv1 == "Espagnol" %}selected{% endif %}>Espagnol</option>
+                        <option value="Allemand" {% if eleve.lv1 == "Allemand" %}selected{% endif %}>Allemand</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Langue Vivante 2 (LV2)</label>
+                    <select name="lv2" class="form-select">
+                        <option value="">-- Aucune --</option>
+                        <option value="Espagnol" {% if eleve.lv2 == "Espagnol" %}selected{% endif %}>Espagnol</option>
+                        <option value="Allemand" {% if eleve.lv2 == "Allemand" %}selected{% endif %}>Allemand</option>
+                        <option value="Anglais" {% if eleve.lv2 == "Anglais" %}selected{% endif %}>Anglais</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12"><div class="section-title"><i class="bi bi-person-badge text-primary"></i> État Civil</div></div>
+        
+        <div class="col-md-6">
+          <label class="form-label">Nom</label>
+          <input type="text" class="form-control" name="nom" value="{{ eleve.nom }}" required>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Prénoms</label>
+          <input type="text" class="form-control" name="prenoms" value="{{ eleve.prenoms }}" required>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Sexe</label>
+          <select class="form-select" name="sexe">
+            <option value="M" {% if eleve.sexe == 'M' %}selected{% endif %}>Masculin</option>
+            <option value="F" {% if eleve.sexe == 'F' %}selected{% endif %}>Féminin</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Date de Naissance</label>
+          <input type="date" class="form-control" name="date_naissance" value="{{ eleve.date_naissance|date:'Y-m-d'|default_if_none:"-" }}">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Lieu de Naissance</label>
+          <input type="text" class="form-control" name="lieu_naissance" value="{{ eleve.lieu_naissance |default_if_none:"" }}">
+        </div>
+
+        <div class="col-12"><div class="section-title"><i class="bi bi-telephone text-primary"></i> Contacts Parents</div></div>
+        <div class="col-md-6">
+            <label class="form-label">Téléphone</label>
+            <input type="text" class="form-control" name="telephone_parent" value="{{ eleve.telephone_parent }}">
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-control" name="email_parent" value="{{ eleve.email_parent }}">
+        </div>
+
+        <div class="col-12">
+          <div class="section-title"><i class="bi bi-camera text-primary"></i> Photo de profil</div>
+          <input type="file" class="form-control" name="profile_eleve" accept="image/*" onchange="previewImage(event)"/>
+        </div>
+
+        <div class="col-12 text-center mt-5">
+          <button type="submit" class="btn-save shadow">
+            <i class="bi bi-check-circle me-2"></i> Enregistrer les modifications
+          </button>
+          <div class="mt-3">
+              <a href="{% url 'accueil' %}" class="text-decoration-none text-muted">Accueil</a>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+    const classeSelect = document.getElementById('classeSelect');
+    const serieSelect = document.getElementById('serieSelect');
+    const serieContainer = document.getElementById('serieContainer');
+    const langueCollegeDiv = document.getElementById('langueCollegeDiv');
+    const langueLyceeDiv = document.getElementById('langueLyceeDiv');
+
+    function gererAffichageDynamique() {
+    const classe = classeSelect.value;
+    const serie = serieSelect.value;
+    const lycee = ['2nde', '1ère', 'Tle'];
+
+    // 1. Gérer l'affichage de la Série
+    if (lycee.includes(classe)) {
+        serieContainer.style.display = 'block';
+        langueLyceeDiv.style.display = 'block';
+        langueCollegeDiv.style.display = 'none';
+
+        // 2. Cacher LV2 si Série C ou D
+        const lv2Label = document.querySelector('label[for="lv2"]'); // Ajoute un id ou for à ton label
+        const lv2Select = document.getElementsByName('lv2')[0];
+        
+        if (['C', 'D'].includes(serie)) {
+            lv2Select.parentElement.style.display = 'none'; // Cache la colonne LV2
+        } else {
+            lv2Select.parentElement.style.display = 'block';
+        }
+    } else {
+        // Logique Collège (6è, 5è, 4è, 3è)
+        serieContainer.style.display = 'none';
+        langueLyceeDiv.style.display = 'none';
+        langueCollegeDiv.style.display = (['4ème', '3ème'].includes(classe)) ? 'block' : 'none';
+    }
+}
+    function previewImage(event) {
+        var reader = new FileReader();
+        reader.onload = function(){ document.getElementById('imgView').src = reader.result; };
+        reader.readAsDataURL(event.target.files[0]);
+    }
+
+    // Écouteurs d'événements
+    classeSelect.addEventListener('change', gererAffichageDynamique);
+    
+    // Initialisation au chargement
+    document.addEventListener('DOMContentLoaded', gererAffichageDynamique);
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

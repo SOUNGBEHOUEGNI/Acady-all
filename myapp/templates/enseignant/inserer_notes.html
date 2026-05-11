@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+{% block title %}Insérer les notes - {{ classe }}{% endblock %}
+
+{% block content %}
+<style>
+    .locked-note { background-color: #f1f3f5 !important; cursor: not-allowed; color: #6c757d; font-weight: bold; }
+    .note-input:focus { border-color: #0d6efd; box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, .25); }
+    .table-container { background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+</style>
+
+<nav class="navbar navbar-dark bg-primary mb-4 shadow">
+    <div class="container d-flex justify-content-between">
+        <a class="navbar-brand fw-bold" href="{% url 'dashboard_enseignant' %}">{{ school_name }}</a>
+        <span class="navbar-text text-white fw-bold">
+            {{ classe }} {% if serie and serie != "None" %}({{ serie }}){% endif %} - {{ matiere }}
+        </span>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <label class="fw-bold me-2">Trimestre :</label>
+            <select id="trimestre-select" class="form-select d-inline-block w-auto">
+                <option value="1" {% if trimestre_selected == 1 %}selected{% endif %}>Trimestre 1</option>
+                <option value="2" {% if trimestre_selected == 2 %}selected{% endif %}>Trimestre 2</option>
+                <option value="3" {% if trimestre_selected == 3 %}selected{% endif %}>Trimestre 3</option>
+            </select>
+        </div>
+        
+       <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        </div>
+    
+    {% if serie and serie != "None" %}
+        {# Lien pour le Lycée : on ajoute matiere=matiere #}
+        <a href="{% url 'fiche_notes_detail_enseignant_serie' classe=classe serie=serie annee_academique=annee_academique matiere=matiere %}?trimestre={{ trimestre_selected }}" 
+           class="btn btn-outline-info">
+           📄 Voir Fiche de Notes
+        </a>
+    {% else %}
+        {# Lien pour le Collège : on ajoute matiere=matiere #}
+        <a href="{% url 'fiche_notes_detail_enseignant_simple' classe=classe annee_academique=annee_academique matiere=matiere %}?trimestre={{ trimestre_selected }}" 
+           class="btn btn-outline-info">
+           📄 Voir Fiche de Notes
+        </a>
+    {% endif %}
+</div>
+    </div>
+
+    <form method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="trimestre" value="{{ trimestre_selected }}">
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} text-center">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="table-container">
+            <table class="table table-hover align-middle text-center">
+                <thead class="table-light">
+                    <tr>
+                        <th>N°</th>
+                        <th class="text-start">Nom & Prénoms</th>
+                        <th style="width: 100px;">Int. 1</th>
+                        <th style="width: 100px;">Int. 2</th>
+                        <th style="width: 100px;">Int. 3</th>
+                        <th style="width: 100px;">Dev. 1</th>
+                        <th style="width: 100px;">Dev. 2</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for eleve in eleves %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td class="text-start fw-bold">{{ eleve.nom }} {{ eleve.prenoms }}</td>
+                        
+                        <td>
+                            <input type="text" name="note_{{ eleve.id }}_interro1" class="form-control note-input {% if eleve.interro1 %}locked-note{% endif %}" 
+                            value="{{ eleve.interro1 }}" {% if eleve.interro1 %}readonly{% endif %}>
+                        </td>
+                        <td>
+                            <input type="text" name="note_{{ eleve.id }}_interro2" class="form-control note-input {% if eleve.interro2 %}locked-note{% endif %}" 
+                            value="{{ eleve.interro2 }}" {% if eleve.interro2 %}readonly{% endif %}>
+                        </td>
+                        <td>
+                            <input type="text" name="note_{{ eleve.id }}_interro3" class="form-control note-input {% if eleve.interro3 %}locked-note{% endif %}" 
+                            value="{{ eleve.interro3 }}" {% if eleve.interro3 %}readonly{% endif %}>
+                        </td>
+                        <td>
+                            <input type="text" name="note_{{ eleve.id }}_devoir1" class="form-control note-input {% if eleve.devoir1 %}locked-note{% endif %}" 
+                            value="{{ eleve.devoir1 }}" {% if eleve.devoir1 %}readonly{% endif %}>
+                        </td>
+                        <td>
+                            <input type="text" name="note_{{ eleve.id }}_devoir2" class="form-control note-input {% if eleve.devoir2 %}locked-note{% endif %}" 
+                            value="{{ eleve.devoir2 }}" {% if eleve.devoir2 %}readonly{% endif %}>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="text-center mt-5 mb-5">
+            <button type="submit" class="btn btn-success btn-lg px-5 shadow">💾 Enregistrer les nouvelles notes</button>
+        </div>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 1. Changement de trimestre automatique
+    const selectTrimestre = document.getElementById('trimestre-select');
+    selectTrimestre.addEventListener('change', function() {
+        const url = new URL(window.location.href);
+        url.searchParams.set('trimestre', this.value);
+        window.location.href = url.toString();
+    });
+
+    // 2. Navigation intelligente (Excel Style)
+    const inputs = Array.from(document.querySelectorAll('.note-input'));
+    inputs.forEach((input) => {
+        input.addEventListener('keydown', function(e) {
+            const currentCell = this.closest('td');
+            const currentRow = this.closest('tr');
+            const colIndex = Array.from(currentRow.querySelectorAll('td')).indexOf(currentCell);
+
+            let targetInput = null;
+            if (e.key === 'ArrowDown' || e.key === 'Enter') {
+                e.preventDefault();
+                const nextRow = currentRow.nextElementSibling;
+                if (nextRow) targetInput = nextRow.querySelectorAll('td')[colIndex].querySelector('input');
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                const prevRow = currentRow.previousElementSibling;
+                if (prevRow) targetInput = prevRow.querySelectorAll('td')[colIndex].querySelector('input');
+            }
+
+            if (targetInput) { targetInput.focus(); targetInput.select(); }
+        });
+
+        // Coloration en rouge si invalide
+        input.addEventListener('input', function() {
+            const val = this.value.replace(',', '.');
+            this.style.backgroundColor = (val !== "" && (parseFloat(val) < 0 || parseFloat(val) > 20 || isNaN(val))) ? "#ffdce0" : "";
+        });
+    });
+});
+</script>
+{% endblock %}

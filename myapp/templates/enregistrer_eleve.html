@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="fr">
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acadynote - Enregistrement Élève</title>
+    <link rel="icon" href="{% static 'acady.png' %}" type="image/png" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #1e40af;
+            --bg-gradient: linear-gradient(135deg, #f8f9ff 0%, #e0e7ff 100%);
+        }
+        body { background: var(--bg-gradient); font-family: 'Plus Jakarta Sans', sans-serif; min-height: 100vh; color: #1e293b; }
+        .form-wrapper { max-width: 850px; margin: 40px auto; background: #ffffff; padding: 40px; border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.05); }
+        .section-title { font-size: 1rem; font-weight: 700; color: var(--secondary-color); margin: 30px 0 15px 0; padding-bottom: 8px; border-bottom: 2px solid #f1f5f9; display: flex; align-items: center; gap: 10px; text-transform: uppercase; }
+        .form-label { font-size: 0.85rem; font-weight: 600; color: #64748b; }
+        .photo-upload { background: #f8fafc; border: 2px dashed #cbd5e1; padding: 25px; border-radius: 16px; text-align: center; cursor: pointer; transition: 0.3s; }
+        .photo-upload:hover { border-color: var(--primary-color); background: #eff6ff; }
+        #imgView { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary-color); display: none; margin: 10px auto; }
+        .btn-submit { background: var(--primary-color); border: none; padding: 16px; font-weight: 700; border-radius: 12px; color: white; transition: 0.3s; width: 100%; margin-top: 30px; }
+        .btn-submit:hover { background: var(--secondary-color); transform: translateY(-2px); }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark shadow-sm" style="background: var(--primary-color);">
+    <div class="container">
+        <a class="navbar-brand" href="{% url 'accueil' %}">
+            <i class="fas fa-graduation-cap me-2"></i><strong>{{ school_name|default:"ACADYNOTE" }}</strong>
+        </a>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="form-wrapper">
+        <div class="text-center mb-4">
+            <h2 class="fw-800 text-primary">Inscription de l'Élève</h2>
+            <p class="text-muted">Année Académique : {{ annee_academique|default:"2025-2026" }}</p>
+        </div>
+
+        <form method="POST" action="{% url 'enregistrer_eleve' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-success{% endif %} border-0 shadow-sm text-center">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <div class="section-title"><i class="fas fa-user"></i> État Civil</div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Nom de famille</label>
+                    <input type="text" class="form-control" name="nom" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Prénoms</label>
+                    <input type="text" class="form-control" name="prenoms" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Date de Naissance</label>
+                    <input type="date" class="form-control" name="date_naissance">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Lieu de Naissance</label>
+                    <input type="text" class="form-control" name="lieu_naissance">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Sexe</label>
+                    <select class="form-select" name="sexe">
+                        <option value="M">Masculin</option>
+                        <option value="F">Féminin</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Nationalité</label>
+                    <input type="text" class="form-control" name="nationalite" value="Béninoise">
+                </div>
+            </div>
+
+            <div class="section-title"><i class="fas fa-school"></i> Informations Académiques</div>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Matricule (13 chiffres)</label>
+                    <input type="text" class="form-control" name="matricule" id="matriculeInput" maxlength="13" placeholder="Ex: 1234567890123" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Classe</label>
+                    <select class="form-select" name="classe" id="classeSelect" required>
+                        <option value="" disabled selected>Choisir...</option>
+                        <optgroup label="Collège">
+                            <option value="6ème">6ème</option>
+                            <option value="5ème">5ème</option>
+                            <option value="4ème">4ème</option>
+                            <option value="3ème">3ème</option>
+                        </optgroup>
+                        <optgroup label="Lycée">
+                            <option value="2nde">2nde</option>
+                            <option value="1ère">1ère</option>
+                            <option value="Tle">Tle</option>
+                        </optgroup>
+                    </select>
+                </div>
+                <div class="col-md-4" id="serieContainer" style="display: none;">
+                    <label class="form-label">Série</label>
+                    <select class="form-select" name="serie" id="serieSelect">
+                        <option value="A1">A1</option>
+                        <option value="A2">A2</option>
+                        <option value="B">B</option>
+                        <option value="C">C</option>
+                        <option value="D">D</option>
+                    </select>
+                </div>
+
+                <div class="col-md-12" id="langueCollegeDiv" style="display:none;">
+                    <label class="form-label">Langue de Spécialité (4ème/3ème)</label>
+                    <select name="langue_specialite" class="form-select border-primary">
+                        <option value="">-- Choisir la langue --</option>
+                        <option value="Espagnol">Espagnol</option>
+                        <option value="Allemand">Allemand</option>
+                    </select>
+                </div>
+
+                <div class="col-md-12" id="langueLyceeDiv" style="display:none;">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label">Langue Vivante 1 (LV1)</label>
+                            <select name="lv1" class="form-select">
+                                <option value="Anglais">Anglais</option>
+                                <option value="Espagnol">Espagnol</option>
+                                <option value="Allemand">Allemand</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6" id="lv2Column">
+                            <label class="form-label">Langue Vivante 2 (LV2)</label>
+                            <select name="lv2" class="form-select">
+                                <option value="">-- Aucune --</option>
+                                <option value="Espagnol">Espagnol</option>
+                                <option value="Allemand">Allemand</option>
+                                <option value="Anglais">Anglais</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Année Académique</label>
+                    <input type="text" class="form-control" name="annee_academique" value="2025-2026" required>
+                </div>
+            </div>
+
+            <div class="section-title"><i class="fas fa-phone"></i> Contacts Parents</div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Téléphone Parent</label>
+                    <input type="text" class="form-control" name="telephone_parent">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Email Parent</label>
+                    <input type="email" class="form-control" name="email_parent">
+                </div>
+            </div>
+
+            <div class="photo-upload mt-4" onclick="document.getElementById('profile_eleve').click()">
+                <i class="fas fa-cloud-upload-alt fa-2x mb-2 text-primary"></i>
+                <p class="mb-0 fw-bold">Photo de l'élève</p>
+                <input type="file" class="d-none" id="profile_eleve" name="profile_eleve" accept="image/*" onchange="previewImage(event)">
+                <img id="imgView" src="#" alt="Aperçu">
+            </div>
+
+            <button type="submit" class="btn-submit">
+                <i class="fas fa-check-circle me-2"></i>VALIDER L'INSCRIPTION
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const classeSelect = document.getElementById('classeSelect');
+    const serieSelect = document.getElementById('serieSelect');
+    const matriculeInput = document.getElementById('matriculeInput');
+    
+    const serieContainer = document.getElementById('serieContainer');
+    const langueCollegeDiv = document.getElementById('langueCollegeDiv');
+    const langueLyceeDiv = document.getElementById('langueLyceeDiv');
+    const lv2Column = document.getElementById('lv2Column');
+
+    function actualiserAffichage() {
+        const classe = classeSelect.value;
+        const serie = serieSelect.value;
+        const lyceeClasses = ['2nde', '1ère', 'Tle'];
+
+        // 1. Gestion de la SERIE
+        if (lyceeClasses.includes(classe)) {
+            serieContainer.style.display = 'block';
+        } else {
+            serieContainer.style.display = 'none';
+            serieSelect.value = "Général";
+        }
+
+        // 2. Gestion des LANGUES
+        if (['4ème', '3ème'].includes(classe)) {
+            langueCollegeDiv.style.display = 'block';
+            langueLyceeDiv.style.display = 'none';
+        } 
+        else if (lyceeClasses.includes(classe)) {
+            langueCollegeDiv.style.display = 'none';
+            langueLyceeDiv.style.display = 'block';
+
+            // Masquer LV2 pour Séries C et D
+            if (['C', 'D'].includes(serie)) {
+                lv2Column.style.display = 'none';
+            } else {
+                lv2Column.style.display = 'block';
+            }
+        } 
+        else {
+            langueCollegeDiv.style.display = 'none';
+            langueLyceeDiv.style.display = 'none';
+        }
+    }
+
+    classeSelect.addEventListener('change', actualiserAffichage);
+    serieSelect.addEventListener('change', actualiserAffichage);
+
+    if (matriculeInput) {
+        matriculeInput.addEventListener('input', function() {
+            this.value = this.value.replace(/\D/g, '').slice(0, 13);
+        });
+    }
+
+    actualiserAffichage();
+});
+
+function previewImage(event) {
+    const reader = new FileReader();
+    reader.onload = function(){
+        const imgView = document.getElementById('imgView');
+        imgView.src = reader.result;
+        imgView.style.display = 'block';
+    };
+    if (event.target.files[0]) {
+        reader.readAsDataURL(event.target.files[0]);
+    }
+}
+</script>
+</body>
+</html>

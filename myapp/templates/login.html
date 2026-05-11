@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="fr">
+{% load static %}
+<head>
+    <meta charset="utf-8">
+    <link rel="icon" href="{% static 'acady.png' %}" type="image/png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Connexion | Acadynote</title>
+
+    <style>
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --accent-color: #00d2ff;
+        }
+
+        body, html {
+            margin: 0; padding: 0; height: 100%;
+            font-family: 'Poppins', sans-serif; /* Une police plus moderne */
+            background: #0f172a; /* Fond sombre profond */
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden;
+        }
+
+        #particles-js {
+            position: fixed; width: 100%; height: 100%; z-index: 0;
+        }
+
+        /* === CONTAINER GLASSMORPHISM === */
+        .form-container {
+            position: relative;
+            z-index: 1;
+            background: var(--glass-bg);
+            padding: 2.5rem;
+            border-radius: 24px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            width: 90%;
+            max-width: 420px;
+            color: white;
+            animation: fadeInScale 0.8s ease-out;
+        }
+
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .logo-area {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .logo-area h2 {
+            font-weight: 700;
+            letter-spacing: -1px;
+            margin-top: 10px;
+        }
+
+        /* === INPUTS STYLISÉS === */
+        .input-group-text {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--glass-border);
+            color: white;
+            border-right: none;
+        }
+
+        .form-control {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            color: white;
+            padding: 12px;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: var(--accent-color);
+            box-shadow: 0 0 15px rgba(0, 210, 255, 0.3);
+            color: white;
+        }
+
+        .form-control::placeholder { color: rgba(255, 255, 255, 0.4); }
+
+        /* === BOUTONS === */
+        .btn-submit {
+            background: var(--primary-gradient);
+            border: none;
+            border-radius: 12px;
+            padding: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+            color: white;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(118, 75, 162, 0.4);
+            filter: brightness(1.1);
+        }
+
+        .link-signup {
+            color: var(--accent-color);
+            text-decoration: none;
+            font-weight: 500;
+            transition: 0.3s;
+        }
+
+        .link-signup:hover {
+            text-decoration: underline;
+            filter: brightness(1.2);
+        }
+
+        .alert {
+            background: rgba(231, 76, 60, 0.2);
+            border: 1px solid #e74c3c;
+            color: #ff9999;
+            border-radius: 10px;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="particles-js"></div>
+
+    <div class="form-container">
+    <div class="logo-area">
+        <h2>Acadynote</h2>
+        <p style="color: rgba(255,255,255,0.6); font-size: 0.9rem;">Bienvenue ! Connectez-vous pour continuer.</p>
+    </div>
+
+    <form method="post" action="{{ request.get_full_path }}">
+        {% csrf_token %}
+        
+        <div class="mb-3">
+            <label class="form-label small">Nom d'utilisateur</label>
+            <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-user"></i></span>
+                <input type="text" name="username" class="form-control" placeholder="Ex: JeanDupont" required>
+            </div>
+        </div>
+
+        <div class="mb-4">
+            <label class="form-label small">Mot de passe</label>
+            <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-submit w-100 shadow-sm">
+            <i class="fas fa-sign-in-alt me-2"></i> Se connecter
+        </button>
+    </form>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert mt-3 animate__animated animate__shakeX">
+                <i class="fas fa-exclamation-circle me-2"></i> {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="text-center mt-4">
+        <p class="small mb-0">Vous n'avez pas encore de compte ?</p>
+        <a href="{% url 'inscription' %}" class="link-signup">Créer un compte maintenant</a>
+    </div>
+</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <script>
+      particlesJS("particles-js", {
+        particles: {
+          number: { value: 60, density: { enable: true, value_area: 800 } },
+          color: { value: "#6366f1" },
+          shape: { type: "circle" },
+          opacity: { value: 0.2, random: true },
+          size: { value: 3, random: true },
+          line_linked: { enable: true, distance: 150, color: "#6366f1", opacity: 0.1, width: 1 },
+          move: { enable: true, speed: 1.5, direction: "none", random: false, straight: false, out_mode: "out", bounce: false }
+        },
+        interactivity: {
+          detect_on: "canvas",
+          events: { onhover: { enable: true, mode: "bubble" }, onclick: { enable: true, mode: "push" } },
+          modes: { bubble: { distance: 200, size: 6, duration: 2, opacity: 0.8 } }
+        },
+        retina_detect: true
+      });
+    </script>
+</body>
+</html>

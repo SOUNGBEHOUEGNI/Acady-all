@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Accueil | CPEG LE TRÉSOR DE DOWA{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary: #1e40af; 
+        --accent: #f59e0b;  
+        --text-dark: #0f172a;
+        --bg-light: #f8fafc;
+        --glass: rgba(255, 255, 255, 0.9);
+    }
+
+    body { background-color: var(--bg-light); color: var(--text-dark); overflow-x: hidden; font-family: 'Inter', sans-serif; }
+
+    /* Barre supérieure */
+    .top-bar {
+        background: white;
+        padding: 12px 8%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .info-pill {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: #f1f5f9;
+        padding: 6px 16px;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--primary);
+    }
+
+    .contact-links a {
+        text-decoration: none;
+        color: var(--text-dark);
+        font-weight: 700;
+        margin-left: 20px;
+        transition: 0.3s;
+    }
+
+    /* Navbar Responsive */
+    .landing-nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 8%;
+        background: var(--glass);
+        backdrop-filter: blur(10px);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+    }
+
+    .brand { font-size: 1.5rem; font-weight: 900; color: var(--primary); text-decoration: none; }
+    .brand span { color: var(--accent); }
+
+    .btn-portal {
+        background: var(--primary);
+        color: white !important;
+        padding: 10px 20px;
+        border-radius: 12px;
+        font-weight: 700;
+        transition: 0.3s;
+        text-decoration: none;
+        font-size: 0.9rem;
+    }
+
+    /* Hero Section */
+    .hero-section {
+        padding: 80px 5% 120px;
+        background: radial-gradient(circle at top right, #e0f2fe 0%, #ffffff 100%);
+        text-align: center;
+    }
+
+    .hero-title { font-size: clamp(2rem, 6vw, 3.5rem); font-weight: 900; line-height: 1.2; margin-bottom: 20px; }
+    .hero-title span { background: linear-gradient(to right, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+    /* Formulaire de recherche */
+    .search-container {
+        max-width: 550px;
+        margin: -100px auto 50px;
+        padding: 0 20px;
+        position: relative;
+        z-index: 10;
+    }
+
+    .search-card {
+        background: white;
+        border-radius: 30px;
+        padding: 35px;
+        box-shadow: 0 40px 80px rgba(0,0,0,0.1);
+        border: 1px solid rgba(255,255,255,0.8);
+    }
+
+    .search-card h3 { font-weight: 800; color: var(--primary); margin-bottom: 25px; text-align: center; font-size: 1.2rem; }
+
+    .form-group-custom {
+        background: #f8fafc;
+        border: 2px solid #f1f5f9;
+        border-radius: 15px;
+        padding: 10px 18px;
+        margin-bottom: 15px;
+        transition: 0.3s;
+    }
+
+    .form-group-custom:focus-within { border-color: var(--primary); background: white; }
+
+    .form-group-custom label { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: #94a3b8; display: block; margin-bottom: 2px; }
+    
+    .form-group-custom input, .form-group-custom select {
+        border: none; background: transparent; width: 100%; font-weight: 600; color: var(--text-dark); outline: none; font-size: 1rem;
+    }
+
+    .btn-search {
+        background: linear-gradient(135deg, var(--primary) 0%, #3b82f6 100%);
+        color: white; border: none; width: 100%; padding: 18px; border-radius: 15px;
+        font-weight: 800; font-size: 1rem; cursor: pointer; transition: 0.3s; margin-top: 10px;
+    }
+
+    .btn-search:hover { transform: translateY(-2px); box-shadow: 0 15px 30px rgba(37, 99, 235, 0.2); }
+
+    /* Stats */
+    .stats-bar { display: flex; justify-content: center; gap: 30px; margin-top: 40px; flex-wrap: wrap; }
+    .stat-item { text-align: center; min-width: 100px; }
+    .stat-number { display: block; font-size: 1.3rem; font-weight: 900; color: var(--primary); }
+    .stat-label { font-size: 0.7rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .top-bar { display: none; }
+        .landing-nav { padding: 15px 5%; }
+        .brand { font-size: 1.2rem; }
+        .hero-section { padding: 50px 5% 100px; }
+        .search-container { margin-top: -80px; }
+    }
+</style>
+
+<div class="top-bar">
+    <div class="info-pill">
+        <i class="fas fa-location-dot"></i>
+        <span>DOWA, PORTO-NOVO (BÉNIN)</span>
+    </div>
+    <div class="contact-links">
+        <a href="tel:+2290197884441">01 97 88 44 41</a>
+        <a href="tel:+2290198252598">01 98 25 25 98</a>
+    </div>
+</div>
+
+<nav class="landing-nav">
+    <a href="/" class="brand">CPEG<span> LE TRÉSOR DE DOWA</span></a>
+    <a href="{% url 'choix_role' %}" class="btn-portal">ESPACE PERSONNEL <i class="fas fa-user-circle ms-1"></i></a>
+</nav>
+
+<section class="hero-section">
+    <h1 class="hero-title">L'Excellence est <span>notre Trésor.</span></h1>
+    <p class="text-muted mx-auto" style="max-width: 600px; font-weight: 500;">
+        Accédez aux résultats de vos enfants en temps réel via <strong>Acadynote 2026</strong>.
+    </p>
+
+    <div class="stats-bar">
+        <div class="stat-item"><span class="stat-number">100%</span><span class="stat-label">SÉCURISÉ</span></div>
+        <div class="stat-item"><span class="stat-number">DIRECT</span><span class="stat-label">RÉSULTATS</span></div>
+        <div class="stat-item"><span class="stat-number">24/7</span><span class="stat-label">ACCÈS</span></div>
+    </div>
+</section>
+
+<div class="search-container">
+    <div class="search-card">
+        <h3>CONSULTER UN BULLETIN</h3>
+        <form method="GET" action="{% url 'suivre_eleve_resultat' %}">
+            <div class="form-group-custom">
+                <label>Année Académique</label>
+                <select name="annee" required>
+                    <option value="2025-2026">2025-2026</option>
+                    <option value="2024-2025">2024-2025</option>
+                </select>
+            </div>
+            <div class="form-group-custom">
+                <label>Matricule de l'élève</label>
+                <input type="text" name="educmaster" placeholder="Entrez le matricule" required>
+            </div>
+            <div class="form-group-custom">
+                <label>Période</label>
+                <select name="trimestre" required>
+                    <option value="" disabled selected>Choisir...</option>
+                    <option value="1">1er Trimestre</option>
+                    <option value="2">2ème Trimestre</option>
+                    <option value="3">3ème Trimestre</option>
+                </select>
+            </div>
+            <button type="submit" class="btn-search">AFFICHER LES RÉSULTATS</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

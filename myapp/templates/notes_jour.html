@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="{% static 'acady.png' %}" type="image/png" />
+    <title>Journal des activités</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f9fafb;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+        }
+        .activity {
+            background: #fff;
+            padding: 12px 20px;
+            margin-bottom: 10px;
+            border-left: 5px solid #2563eb;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            border-radius: 8px;
+        }
+        .activity span.date {
+            font-size: 12px;
+            color: #888;
+            float: right;
+        }
+        @media (max-width: 600px) {
+            .activity {
+                padding: 10px;
+                font-size: 14px;
+            }
+            .activity span.date {
+                font-size: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Journal des activités pour {{ classe }} le {{ date }}</h1>
+
+    {% if notes %}
+        {% for note in notes %}
+            <div class="activity">
+                L'élève <strong>{{ note.eleve.nom }} {{ note.eleve.prenoms }}</strong>
+                a reçu une note de <strong>{{ note.valeur }}</strong> en <strong>{{ note.matiere }}</strong>
+                <span class="date">{{ note.date_ajout|date:"d/m/Y H:i" }}</span>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>Aucune activité enregistrée pour cette date et cette classe.</p>
+    {% endif %}
+</body>
+</html>

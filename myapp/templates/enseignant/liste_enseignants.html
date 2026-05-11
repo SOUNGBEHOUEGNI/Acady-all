@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Gestion Enseignants & Planning | Acadynote{% endblock %}
+
+{% block content %}
+<style>
+    .teacher-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        padding: 20px;
+        margin-bottom: 30px;
+        border: 1px solid #eef2f7;
+    }
+    .table thead th {
+        background-color: #2563eb;
+        color: white;
+        border: none;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+    }
+    .badge-subject {
+        background: #eff6ff;
+        color: #2563eb;
+        padding: 5px 12px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.8rem;
+    }
+    .btn-action {
+        border-radius: 8px;
+        transition: 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+    .message {
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        font-weight: 500;
+    }
+    .message.success { background: #dcfce7; color: #166534; border-left: 5px solid #22c55e; }
+    .message.error { background: #fee2e2; color: #991b1b; border-left: 5px solid #ef4444; }
+    
+    .planning-section td {
+        vertical-align: middle;
+    }
+    .sticky-school-name {
+        background: linear-gradient(90deg, #1e293b, #2563eb);
+        color: white;
+        padding: 15px;
+        border-radius: 10px;
+        text-align: center;
+        margin-bottom: 25px;
+    }
+</style>
+
+<div class="container mt-4">
+    <div class="sticky-school-name shadow-sm">
+        <a href="{% url 'accueil' %}" class="text-white text-decoration-none">
+            <i class="fas fa-school me-2"></i><strong>CEPG LE TRESOR DE DOWA</strong>
+        </a>
+    </div>
+
+    {% if error %}
+        <div class="message error animate__animated animate__headShake">
+            <i class="fas fa-exclamation-circle me-2"></i> {{ error }}
+        </div>
+    {% endif %}
+    {% if success %}
+        <div class="message success animate__animated animate__fadeIn">
+            <i class="fas fa-check-circle me-2"></i> {{ success }}
+        </div>
+    {% endif %}
+<div class="teacher-card mb-4 bg-light">
+    <form method="GET" class="row align-items-end g-3">
+        <div class="col-md-4">
+            <label class="form-label fw-bold text-muted small text-uppercase">Filtrer par Année Académique</label>
+            <select name="annee_academique" class="form-select border-primary shadow-sm">
+                <option value="">Toutes les années</option>
+                {% for annee in annees_disponibles %}
+                    <option value="{{ annee }}" {% if annee == annee_actuelle %}selected{% endif %}>
+                         {{ annee }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100 shadow-sm">
+                <i class="fas fa-filter me-2"></i>Filtrer
+            </button>
+        </div>
+        {% if annee_actuelle %}
+        <div class="col-md-2">
+            <a href="{% url 'liste_enseignants' %}" class="btn btn-outline-secondary w-100 shadow-sm">
+                <i class="fas fa-times me-2"></i>Réinitialiser
+            </a>
+        </div>
+        {% endif %}
+    </form>
+</div>
+    <div class="teacher-card">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="mb-0 fw-bold text-dark"><i class="fas fa-user-tie me-2 text-primary"></i>Liste des Enseignants</h3>
+            </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th class="text-center">#</th>
+                        <th>Nom & Prénoms</th>
+                        <th>Expertise</th>
+                        <th>Classes</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for e in enseignants %}
+                    <tr>
+                        <td class="text-center fw-bold text-muted">{{ forloop.counter }}</td>
+                        <td>
+                            <div class="fw-bold text-dark">{{ e.nom }} {{ e.prenoms }}</div>
+                            <div class="small text-muted"><i class="far fa-envelope me-1"></i>{{ e.email }}</div>
+                        </td>
+                        <td><span class="badge-subject">{{ e.matiere }}</span></td>
+                        <td><span class="text-dark small fw-medium">{{ e.classes }}{{ e.serie }}</span></td>
+                        <td>
+                            <div class="d-flex justify-content-center gap-2">
+                                <a href="{% url 'ajouter_horaire' e.id %}" class="btn btn-outline-primary btn-sm btn-action" title="Ajouter Heure">
+                                    <i class="fas fa-calendar-plus"></i>
+                                </a>
+                                <a href="{% url 'modifier_horaire' e.id %}" class="btn btn-outline-warning btn-sm btn-action" title="Modifier">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'supprimer_enseignant' e.id %}" class="btn btn-outline-danger btn-sm btn-action" 
+                                   onclick="return confirm('Supprimer cet enseignant ?');" title="Supprimer">
+                                    <i class="fas fa-trash-alt"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="py-5 text-center text-muted">
+                            <i class="fas fa-folder-open fa-3x mb-3 opacity-20"></i><br>
+                            Aucun enseignant enregistré pour le moment.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="teacher-card planning-section">
+        <h3 class="mb-4 fw-bold text-dark"><i class="fas fa-calendar-alt me-2 text-primary"></i>Planning Complet de l'École</h3>
+        
+        <div class="table-responsive">
+            <table class="table table-bordered align-middle text-center">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 15%">Classe</th>
+                        <th style="width: 15%">Jour</th>
+                        <th>Horaire</th>
+                        <th>Matière</th>
+                        <th>Enseignant</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% regroup horaires by classe as horaires_par_classe %}
+                    {% for group_classe in horaires_par_classe %}
+                        {% regroup group_classe.list by jour as horaires_par_jour %}
+                        {% for group_jour in horaires_par_jour %}
+                            {% for horaire in group_jour.list %}
+                            <tr>
+                                {% if forloop.first and forloop.parentloop.first %}
+                                    <td rowspan="{{ group_classe.list|length }}" class="bg-primary text-white fw-bold fs-5">
+                                        {{ group_classe.grouper }}
+                                    </td>
+                                {% endif %}
+                                {% if forloop.first %}
+                                    <td rowspan="{{ group_jour.list|length }}" class="fw-bold text-primary bg-light">
+                                        {{ group_jour.grouper }}
+                                    </td>
+                                {% endif %}
+                                <td class="small">
+                                    <span class="badge bg-dark">{{ horaire.heure_debut|time:"H:i" }}</span> 
+                                    <i class="fas fa-long-arrow-alt-right mx-1 text-muted"></i>
+                                    <span class="badge bg-dark">{{ horaire.heure_fin|time:"H:i" }}</span>
+                                </td>
+                                <td><span class="fw-bold">{{ horaire.matiere }}</span></td>
+                                <td class="text-muted">{{ horaire.enseignant.nom }} {{ horaire.enseignant.prenoms }}</td>
+                            </tr>
+                            {% endfor %}
+                        {% endfor %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+
+{% endblock %}

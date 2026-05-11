@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}Mon emploi du temps{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h2 class="display-5 fw-bold text-primary">Mon Emploi du Temps</h2>
+        <p class="text-muted">Enseignant : <strong>{{ enseignant.nom }} {{ enseignant.prenoms }}</strong></p>
+        <div class="mx-auto" style="width: 60px; height: 4px; background-color: #0d6efd; border-radius: 2px;"></div>
+    </div>
+
+    {% if error %}
+        <div class="alert alert-danger shadow-sm text-center" role="alert">
+            {{ error }}
+        </div>
+    {% elif horaires %}
+        <div class="row g-4">
+            {% for classe in classes_distinctes %}
+                <div class="col-12 col-lg-6">
+                    <div class="card border-0 shadow-lg h-100 schedule-card">
+                        <div class="card-header bg-white border-bottom py-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h4 class="mb-0 text-dark fw-bold">
+                                    <i class="bi bi-mortarboard-fill me-2 text-primary"></i>{{ classe }}
+                                </h4>
+                                 </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="bg-light">
+                                        <tr>
+                                            <th class="ps-4">Jour</th>
+                                            <th>Horaire</th>
+                                            <th class="pe-4">Matière</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for h in horaires %}
+                                            {% if h.classe == classe %}
+                                            <tr>
+                                                <td class="ps-4">
+                                                    <span class="day-badge">{{ h.jour }}</span>
+                                                </td>
+                                                <td>
+                                                    <div class="d-flex flex-column">
+                                                        <small class="text-muted mb-0"><i class="bi bi-clock me-1"></i> {{ h.heure_debut|time:"H:i" }}</small>
+                                                        <small class="text-muted"><i class="bi bi-arrow-down-short me-1"></i> {{ h.heure_fin|time:"H:i" }}</small>
+                                                    </div>
+                                                </td>
+                                                <td class="pe-4 fw-semibold text-primary">
+                                                    {{ h.matiere }}
+                                                </td>
+                                            </tr>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-calendar-x display-1 text-muted"></i>
+            <p class="text-muted fs-5 mt-3">Aucun horaire enregistré pour le moment.</p>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+    /* Couleurs personnalisées */
+    :root {
+        --primary-soft: rgba(13, 110, 253, 0.1);
+    }
+
+    .bg-primary-soft {
+        background-color: var(--primary-soft);
+    }
+
+    /* Style des cartes */
+    .schedule-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border-radius: 15px;
+        overflow: hidden;
+    }
+
+    .schedule-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 1rem 3rem rgba(0,0,0,.175)!important;
+    }
+
+    /* Badges pour les jours */
+    .day-badge {
+        background: #f8f9fa;
+        color: #495057;
+        padding: 5px 12px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        border: 1px solid #dee2e6;
+        display: inline-block;
+        min-width: 80px;
+        text-align: center;
+    }
+
+    /* Table styling */
+    .table thead th {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #6c757d;
+        border: none;
+    }
+
+    .table td {
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+        border-color: #f1f1f1;
+    }
+
+    /* Typographie */
+    body {
+        background-color: #f4f7f6;
+        font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
+    }
+</style>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+{% endblock %}

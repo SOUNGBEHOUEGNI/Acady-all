@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+
+{% block title %}Vérification OTP | Acadynote{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary: #4f46e5;
+        --primary-glow: rgba(79, 70, 229, 0.4);
+        --bg-dark: #0f172a;
+        --card-bg: rgba(255, 255, 255, 0.98);
+        --text-main: #1e293b;
+        --text-muted: #64748b;
+        --border-color: #e2e8f0;
+    }
+
+    /* Force le contenu à prendre toute la place et centrer la carte */
+    .otp-page-wrapper {
+        min-height: 80vh;
+        display: flex;
+        flex-direction: column; /* Force l'empilement vertical si nécessaire */
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+    }
+
+    .otp-container {
+        background: var(--card-bg);
+        backdrop-filter: blur(10px);
+        padding: 40px 40px 0 40px;
+        border-radius: 32px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        width: 100%;
+        max-width: 450px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        text-align: center;
+        overflow: hidden;
+        display: block; /* Sécurité : empêche le flex-parent de casser le flux */
+    }
+
+    .icon-box {
+        width: 64px;
+        height: 64px;
+        background: #f1f5f9;
+        color: var(--primary);
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        margin: 0 auto 20px;
+    }
+
+    h3 { color: var(--bg-dark); font-weight: 800; font-size: 22px; margin-bottom: 8px; }
+
+    p.subtitle { color: var(--text-muted); font-size: 14px; line-height: 1.5; margin-bottom: 30px; }
+
+    .otp-input {
+        background: #f8fafc;
+        border: 2px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 18px;
+        font-size: 26px;
+        font-weight: 800;
+        text-align: center;
+        letter-spacing: 12px;
+        color: var(--primary);
+        width: 100%;
+        margin-bottom: 25px;
+        display: block; /* Occupe toute la ligne */
+    }
+
+    .btn-verify {
+        width: 100%;
+        padding: 16px;
+        background: linear-gradient(135deg, var(--primary), #6366f1);
+        border: none;
+        border-radius: 16px;
+        color: white;
+        font-weight: 800;
+        font-size: 16px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 40px; /* Espace avant le footer */
+    }
+
+    /* --- FOOTER ANCRÉ --- */
+    .resend-footer {
+        background: #f8fafc;
+        margin: 0 -40px; /* Pour sortir du padding de la carte */
+        padding: 20px;
+        border-top: 1px solid var(--border-color);
+        font-size: 14px;
+        color: var(--text-muted);
+        display: block; /* Garantit qu'il reste en bas */
+        clear: both;
+    }
+
+    .resend-footer a {
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 700;
+    }
+</style>
+
+<div class="otp-page-wrapper">
+    <div class="otp-container">
+        <div class="icon-box">
+            <i class="fas fa-shield-alt"></i>
+        </div>
+
+        <h3>Vérification du code</h3>
+        <p class="subtitle">Sécurisation d'Acadynote : veuillez entrer le code à 6 chiffres reçu par email.</p>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %}" style="border-radius: 12px; margin-bottom: 20px;">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+            <input type="text" 
+                   name="otp" 
+                   id="otp" 
+                   class="otp-input" 
+                   maxlength="6" 
+                   placeholder="••••••"
+                   required>
+            
+            <button type="submit" class="btn-verify">
+                Confirmer <i class="fas fa-arrow-right"></i>
+            </button>
+        </form>
+
+        <div class="resend-footer">
+            Vous n'avez rien reçu ? 
+            <a href="#">Renvoyer le code</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    const otpInput = document.getElementById('otp');
+    otpInput.addEventListener('input', function(e) {
+        this.value = this.value.replace(/[^0-9]/g, '');
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,195 @@
+{% extends 'base.html' %}
+
+{% block title %}Appel | {{ classe_nom }}{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --absent-bg: #fff1f2;
+        --absent-border: #fecdd3;
+        --absent-text: #e11d48;
+    }
+
+    .attendance-header {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        margin-bottom: 25px;
+        border-left: 6px solid #2563eb;
+    }
+
+    .table-container {
+        background: white;
+        border-radius: 15px;
+        padding: 10px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    }
+
+    .table thead th {
+        background-color: #f8fafc;
+        color: #475569;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        padding: 15px;
+        border: none;
+    }
+
+    .student-row {
+        transition: all 0.2s ease;
+    }
+
+    /* Style quand l'élève est marqué absent */
+    .student-row.is-absent {
+        background-color: var(--absent-bg) !important;
+    }
+
+    .student-row.is-absent .student-name {
+        color: var(--absent-text) !important;
+    }
+
+    .form-check-input:checked {
+        background-color: #ef4444;
+        border-color: #ef4444;
+    }
+
+    .btn-submit {
+        background: #10b981;
+        border: none;
+        padding: 14px;
+        font-weight: 700;
+        border-radius: 12px;
+        transition: 0.3s;
+    }
+
+    .btn-submit:hover {
+        background: #059669;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);
+    }
+</style>
+
+<div class="container mt-4">
+    <div class="attendance-header d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="h4 mb-1 fw-bold text-dark">Fiche d'Appel Numérique</h2>
+            <p class="text-muted mb-0">
+                <i class="fas fa-users me-1"></i> <strong>{{ classe_nom }}</strong> | 
+                <i class="fas fa-book me-1"></i> <strong>{{ horaire.matiere }}</strong>
+            </p>
+        </div>
+        <div class="text-end text-muted small">
+            <i class="fas fa-calendar-alt"></i> {{ now|date:"d F Y" }}
+        </div>
+    </div>
+<div class="alert alert-info bg-opacity-10 border-info text-info mb>
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-success border-0 shadow-sm mb-4">
+                <i class="fas fa-check-circle me-2"></i> {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="table-container">
+        <form method="POST" action=".">
+            {% csrf_token %}
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Matricule</th>
+                            <th>Élève</th>
+                            <th class="text-center">Sexe</th>
+                            <th class="text-center">Statut</th>
+                            <th style="width: 300px;">Motif de l'absence</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for eleve in eleves %}
+                        <tr class="student-row" id="row_{{ eleve.id }}">
+                            <td class="text-muted fw-bold">#{{ eleve.matricule }}</td>
+                            <td>
+                                <div class="fw-bold student-name text-dark">{{ eleve.nom }}</div>
+                                <div class="small text-muted">{{ eleve.prenoms }}</div>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge {% if eleve.sexe == 'M' %}bg-info{% else %}bg-danger{% endif %} bg-opacity-10 {% if eleve.sexe == 'M' %}text-info{% else %}text-danger{% endif %} px-3">
+                                    {{ eleve.sexe }}
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <div class="form-check form-switch d-flex justify-content-center">
+                                    <input class="form-check-input" type="checkbox" 
+                                           name="absent_{{ eleve.id }}" 
+                                           id="absent_{{ eleve.id }}"
+                                           style="width: 2.8em; height: 1.4em; cursor: pointer;"
+                                           onclick="toggleAbsence({{ eleve.id }}, this.checked)">
+                                    <label class="ms-2 text-secondary small fw-bold" for="absent_{{ eleve.id }}">ABSENT</label>
+                                </div>
+                            </td>
+                            <td>
+                                <input type="text" name="motif_{{ eleve.id }}" id="motif_{{ eleve.id }}" 
+                                       class="form-control form-control-sm border-dashed" 
+                                       placeholder="Précisez le motif..." disabled>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="p-4 border-top">
+                <input type="hidden" name="latitude" id="lat_input">
+                <input type="hidden" name="longitude" id="lng_input">
+                <button type="submit" class="btn btn-success btn-submit w-100">
+                    <i class="fas fa-cloud-upload-alt me-2"></i> Valider et enregistrer l'appel
+                </button>
+                <a href="{% url 'dashboard_enseignant' %}" class="btn btn-link w-100 text-muted mt-2 text-decoration-none small">
+                    <i class="fas fa-times me-1"></i> Accueil
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function toggleAbsence(eleveId, isAbsent) {
+    const motifInput = document.getElementById('motif_' + eleveId);
+    const row = document.getElementById('row_' + eleveId);
+    
+    motifInput.disabled = !isAbsent;
+    
+    if (isAbsent) {
+        row.classList.add('is-absent');
+        motifInput.focus();
+    } else {
+        row.classList.remove('is-absent');
+        motifInput.value = '';
+    }
+}
+document.querySelector('form').addEventListener('submit', function(e) {
+    const latInput = document.getElementById('lat_input');
+    
+    // Si on n'a pas encore les coordonnées, on bloque l'envoi et on demande
+    if (!latInput.value) {
+        e.preventDefault(); 
+        
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                document.getElementById('lat_input').value = position.coords.latitude;
+                document.getElementById('lng_input').value = position.coords.longitude;
+                
+                // On relance la soumission du formulaire
+                e.target.submit();
+            }, function(error) {
+                alert("Vous devez autoriser la géolocalisation pour valider l'appel.");
+            });
+        } else {
+            alert("Géolocalisation non supportée par votre navigateur.");
+        }
+    }
+});
+</script>
+{% endblock %}

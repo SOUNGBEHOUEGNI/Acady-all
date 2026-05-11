@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Modifier mon Profil | Acadynote{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-header bg-dark text-white p-4 rounded-top-4">
+                    <h3 class="mb-0"><i class="fas fa-user-edit me-2 text-warning"></i>Modifier mes informations</h3>
+                </div>
+                <div class="card-body p-4">
+                    
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show rounded-3" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="POST" id="profile-form">
+                        {% csrf_token %}
+
+                        <!-- Infos de base -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small text-uppercase text-muted">Nom</label>
+                                <input type="text" name="nom" class="form-control rounded-3" value="{{ enseignant.nom }}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small text-uppercase text-muted">Prénoms</label>
+                                <input type="text" name="prenoms" class="form-control rounded-3" value="{{ enseignant.prenoms }}" required>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small text-uppercase text-muted">Email</label>
+                                <input type="email" name="email" class="form-control rounded-3" value="{{ enseignant.email }}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small text-uppercase text-muted">Nouveau Mot de passe</label>
+                                <input type="password" name="password" class="form-control rounded-3" placeholder="Laisser vide pour garder l'actuel">
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- Signature Numérique -->
+                        <div class="mb-5">
+                            <label class="form-label fw-bold d-block mb-3">
+                                <i class="fas fa-pen-nib me-2 text-danger"></i>Ma Signature Numérique
+                            </label>
+                            
+                            {% if enseignant.signature %}
+                            <div class="mb-3 p-2 border rounded bg-light" style="width: fit-content;">
+                                <p class="small text-muted mb-1">Signature actuelle :</p>
+                                <img src="{{ enseignant.signature.url }}" alt="Signature" style="max-height: 70px;">
+                            </div>
+                            {% endif %}
+
+                            <div class="signature-wrapper border rounded-3 bg-white shadow-sm" style="position: relative; width: 100%; max-width: 500px;">
+                                <canvas id="signature-pad" style="width: 100%; height: 200px; touch-action: none; cursor: crosshair;"></canvas>
+                            </div>
+                            
+                            <div class="mt-2">
+                                <button type="button" id="clear-signature" class="btn btn-sm btn-outline-secondary rounded-pill">
+                                    <i class="fas fa-eraser me-1"></i>Effacer l'espace de signature
+                                </button>
+                                <div class="form-text mt-2"><i class="fas fa-info-circle me-1"></i> Utilisez votre doigt sur mobile ou votre souris sur PC pour signer.</div>
+                            </div>
+                            
+                            <input type="hidden" name="signature_data" id="signature_data">
+                        </div>
+
+                        <!-- Disciplines et Classes (Tes anciens blocs) -->
+                        <div class="mb-5">
+                            <label class="form-label fw-bold d-block mb-3"><i class="fas fa-book me-2 text-primary"></i>Mes Disciplines</label>
+                            <div class="row g-2">
+                                {% for m in toutes_matieres %}
+                                <div class="col-md-4 col-6">
+                                    <div class="form-check p-2 border rounded-3 bg-light bg-opacity-50 h-100">
+                                        <input class="form-check-input ms-1" type="checkbox" name="matieres" value="{{ m }}" id="mat-{{ forloop.counter }}" 
+                                        {% if m in mes_matieres %}checked{% endif %}>
+                                        <label class="form-check-label ms-2 small fw-semibold" for="mat-{{ forloop.counter }}">{{ m }}</label>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Boutons -->
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-5 pt-3 border-top">
+                            <a href="{% url 'dashboard_enseignant' %}" class="btn btn-light rounded-pill px-4 me-md-2 fw-semibold text-muted shadow-sm">
+                                <i class="fas fa-arrow-left me-2"></i>Retour
+                            </a>
+                            <button type="submit" class="btn btn-warning rounded-pill px-5 fw-bold shadow-sm">
+                                <i class="fas fa-save me-2"></i>Mettre à jour le profil
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+<script>
+    const canvas = document.getElementById("signature-pad");
+    const signaturePad = new SignaturePad(canvas, {
+        backgroundColor: 'rgba(255, 255, 255, 0)', // Fond transparent
+        penColor: 'rgb(0, 0, 0)'
+    });
+
+    // Ajustement de la résolution pour éviter le flou
+    function resizeCanvas() {
+        const ratio = Math.max(window.devicePixelRatio || 1, 1);
+        canvas.width = canvas.offsetWidth * ratio;
+        canvas.height = canvas.offsetHeight * ratio;
+        canvas.getContext("2d").scale(ratio, ratio);
+        signaturePad.clear(); // Efface le canvas lors du redimensionnement
+    }
+
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+
+    const form = document.getElementById("profile-form");
+    const signatureInput = document.getElementById("signature_data");
+
+    form.addEventListener("submit", (e) => {
+        if (!signaturePad.isEmpty()) {
+            // On extrait l'image en PNG Base64
+            const dataURL = signaturePad.toDataURL();
+            signatureInput.value = dataURL;
+        }
+    });
+
+    document.getElementById("clear-signature").addEventListener("click", () => {
+        signaturePad.clear();
+        signatureInput.value = "";
+    });
+</script>
+<style>
+    .form-check-input:checked { background-color: #f59e0b; border-color: #f59e0b; }
+</style>
+{% endblock %}

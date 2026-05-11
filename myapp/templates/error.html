@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}Résultat Introuvable | Acadynote{% endblock %}
+
+{% block content %}
+<style>
+    .error-container {
+        min-height: 70vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .error-card {
+        border: none;
+        border-radius: 30px;
+        background: white;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.05);
+        padding: 50px 30px;
+        text-align: center;
+        max-width: 500px;
+        width: 100%;
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .icon-box {
+        width: 100px;
+        height: 100px;
+        background: #fff1f2;
+        color: #e11d48;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 25px;
+        font-size: 40px;
+    }
+
+    .error-title {
+        color: #1e293b;
+        font-weight: 800;
+        margin-bottom: 15px;
+    }
+
+    .error-text {
+        color: #64748b;
+        font-size: 1.1rem;
+        line-height: 1.6;
+        margin-bottom: 30px;
+    }
+
+    .btn-retry {
+        background: #2563eb;
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 12px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-retry:hover {
+        background: #1e40af;
+        transform: scale(1.05);
+        color: white;
+    }
+
+    .info-list {
+        text-align: left;
+        background: #f8fafc;
+        padding: 20px;
+        border-radius: 15px;
+        margin-top: 25px;
+    }
+
+    .info-list ul {
+        padding-left: 20px;
+        margin-bottom: 0;
+        color: #475569;
+        font-size: 0.9rem;
+    }
+</style>
+
+
+<div class="container error-container">
+    <div class="error-card">
+        <div class="icon-box">
+            <i class="fas fa-search-minus"></i>
+        </div>
+        
+        <h2 class="error-title">Aucune note trouvée</h2>
+        
+        <p class="error-text">
+            Désolé, nous n'avons trouvé aucun résultat correspondant à vos critères de recherche pour le moment.
+        </p>
+
+        <div class="info-list">
+            <p class="small fw-bold text-uppercase text-muted mb-2">Conseils :</p>
+            <ul>
+                <li>Vérifiez l'exactitude du numéro <strong>EducMaster</strong>.</li>
+                <li>Assurez-vous d'avoir sélectionné la bonne <strong>Année Académique</strong>.</li>
+                <li>Accès restreint pour l'élève. Les frais de service numérique n'ont pas été réglés. Veuillez contacter l'administration pour activer l'accès.</li>
+                <li>Il est possible que les notes de ce trimestre ne soient pas encore publiées.</li>
+            </ul>
+        </div>
+
+        <div class="mt-4">
+    <a href="javascript:history.back()" class="btn-retry">
+        <i class="fas fa-arrow-left me-2"></i> Réessayer la recherche
+    </a>
+</div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+{% endblock %}

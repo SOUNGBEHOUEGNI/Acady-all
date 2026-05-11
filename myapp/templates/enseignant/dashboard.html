@@ -1,0 +1,208 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Espace Enseignant | Acadynote{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --teacher-grad: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        --card-grad: linear-gradient(135deg, #6366f1 0%, #4338ca 100%);
+    }
+
+    body {
+        background: #f1f5f9;
+    }
+
+    .dashboard-hero {
+        background: var(--teacher-grad);
+        padding: 60px 20px;
+        border-radius: 0 0 40px 40px;
+        margin-bottom: -50px;
+    }
+
+    .navbar-teacher {
+        background: rgba(15, 23, 42, 0.95) !important;
+        backdrop-filter: blur(10px);
+    }
+
+    .class-card {
+        background: white;
+        border: none;
+        border-radius: 24px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow: hidden;
+    }
+
+    .class-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+
+    .card-header-gradient {
+        background: var(--card-grad);
+        color: white;
+        padding: 25px;
+        text-align: center;
+    }
+
+    .presence-btn {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        color: #475569;
+        font-size: 0.85rem;
+        text-align: left;
+        padding: 12px;
+        border-radius: 12px;
+        display: block;
+        text-decoration: none;
+        transition: 0.2s;
+    }
+
+    .presence-btn.disabled {
+        pointer-events: none;
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .presence-btn:hover:not(.disabled) {
+        background: #eff6ff;
+        border-color: #3b82f6;
+        color: #2563eb;
+    }
+
+    .badge-time {
+        background: #e2e8f0;
+        color: #1e293b;
+        padding: 2px 8px;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 0.75rem;
+    }
+
+    .presence-tooltip {
+        font-size: 0.75rem;
+        color: #dc2626;
+    }
+</style>
+
+<nav class="navbar navbar-expand-lg navbar-dark navbar-teacher sticky-top shadow-sm">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="#"><i class="fas fa-chalkboard-teacher me-2 text-warning"></i>ACADYNOTE</a>
+        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarMenu">
+            <ul class="navbar-nav ms-auto align-items-center">
+                <li class="nav-item"><a class="nav-link px-3" href="{% url 'suivre_eleve' %}">Suivre un élève</a></li>
+                <li class="nav-item"><a class="nav-link px-3" href="{% url 'mon_emploi_du_temps' enseignant.id %}">Mon Planning</a></li>
+                <li class="nav-item"><a class="nav-link px-3" href="{% url 'heures_mensuelles' %}">Mes Heures</a></li>
+                <li class="nav-item">
+    <a class="btn btn-outline-warning btn-sm rounded-pill px-3 me-2" href="{% url 'modifier_profil' %}">
+        <i class="fas fa-user-edit me-1"></i> Profil
+    </a>
+</li>
+                <li class="nav-item ms-lg-3">
+                    <a class="btn btn-outline-danger btn-sm rounded-pill px-4" href="{% url 'enseignant_logout' %}">Déconnexion</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="dashboard-hero text-center text-white">
+    <h1 class="display-5 fw-bold mb-2">CPEG LE TRÉSOR DE DOWA</h1>
+    <p class="lead opacity-75">Bonjour, <strong>{{ enseignant.nom }} {{ enseignant.prenoms }}</strong></p>
+</div>
+
+<div class="container pb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            {% if success %}
+                <div class="alert alert-success border-0 shadow-sm text-center animate__animated animate__fadeIn">
+                    <i class="fas fa-check-circle me-2"></i>{{ success }}
+                </div>
+            {% endif %}
+            {% if error %}
+                <div class="alert alert-danger border-0 shadow-sm text-center animate__animated animate__shakeX">
+                    <i class="fas fa-exclamation-triangle me-2"></i>{{ error }}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4 mt-2">
+        {% for classe in classes %}
+        <div class="col">
+            <div class="card class-card shadow-sm h-100">
+                <div class="card-header-gradient">
+                    <h3 class="h4 fw-bold mb-1">{{ classe.nom }}</h3>
+                    <span class="badge bg-white bg-opacity-20 text-white rounded-pill px-3">Année {{ classe.annee_academique }}</span>
+                </div>
+                
+                <div class="card-body p-4">
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-uppercase text-muted"><i class="fas fa-edit me-2"></i>Saisie des notes</label>
+                        <form action="{% url 'inserer_notes_classe_enseignant' classe=classe.nom serie=classe.serie|default:'None' annee_academique=classe.annee_academique %}" method="GET">
+                            <div class="input-group">
+                                <select name="matiere" class="form-select border-end-0" required style="border-radius: 12px 0 0 12px;">
+                                    {% for m in enseignant.matieres_list %}
+                                        <option value="{{ m }}">{{ m }}</option>
+                                    {% endfor %}
+                                </select>
+                                <button type="submit" class="btn btn-warning px-3" style="border-radius: 0 12px 12px 0;">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div>
+                        <label class="form-label small fw-bold text-uppercase text-muted mb-3"><i class="fas fa-check-double me-2"></i>Feuilles de présence</label>
+                        <div class="d-grid gap-2">
+    {% for horaire in classe.horaires %}
+        {% if horaire.active_btn %}
+            <a href="{% url 'marquer_presence' classe.nom horaire.id %}" 
+               class="presence-btn shadow-sm">
+        {% else %}
+            <button class="presence-btn shadow-sm" disabled
+                    title="{% if horaire.minutes_before_start > 0 %}Actif dans {{ horaire.minutes_before_start }} min{% else %}La présence ne peut plus être marquée{% endif %}">
+        {% endif %}
+        
+        <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="fw-bold text-dark">{{ horaire.matiere }}</span>
+            <span class="badge-time">{{ horaire.jour }}</span>
+        </div>
+        <div class="small text-muted">
+            <i class="far fa-clock me-1"></i> {{ horaire.heure_debut|time:"H:i" }} — {{ horaire.heure_fin|time:"H:i" }}
+        </div>
+
+        {% if horaire.active_btn %}
+            </a>
+        {% else %}
+            </button>
+        {% endif %}
+    {% empty %}
+        <div class="text-center py-3 bg-light rounded-4">
+            <p class="text-muted small mb-0">Aucun cours programmé</p>
+        </div>
+    {% endfor %}
+</div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <div class="card border-0 shadow-sm p-5 bg-white rounded-4">
+                <i class="fas fa-folder-open fa-4x text-light mb-3"></i>
+                <h4 class="text-muted">Aucune classe ne vous est assignée pour le moment.</h4>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+{% endblock %}

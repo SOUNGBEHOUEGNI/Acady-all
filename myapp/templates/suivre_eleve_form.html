@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}Suivre un élève{% endblock %}
+
+{% block content %}
+<style>
+    body {
+        background-color: #f4f7fe; /* Fond très léger pour faire ressortir la carte */
+    }
+
+    .search-card {
+        border: none;
+        border-radius: 24px;
+        background: #ffffff;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+    }
+
+    .search-header {
+        background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+        padding: 40px 20px;
+        color: white;
+        text-align: center;
+    }
+
+    .form-floating > .form-control:focus, .form-floating > .form-select:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 0.25rem rgba(37, 99, 235, 0.1);
+    }
+
+    .btn-search {
+        background: #2563eb;
+        border: none;
+        padding: 14px;
+        border-radius: 12px;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+    }
+
+    .btn-search:hover {
+        background: #1e40af;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(37, 99, 235, 0.3);
+    }
+
+    .input-group-icon {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
+        z-index: 10;
+    }
+</style>
+
+<div class="container py-5 mt-lg-5">
+    <div class="mx-auto" style="max-width: 480px;">
+        
+        <div class="card search-card">
+            <div class="search-header">
+                <div class="mb-3">
+                    <i class="fas fa-user-graduate fa-3x mb-3"></i>
+                </div>
+                <h2 class="fw-800 mb-1">Portail Élève</h2>
+                <p class="opacity-75 mb-0 small">Consultez les notes et résultats en temps réel</p>
+            </div>
+
+            <div class="card-body p-4 p-lg-5">
+                <form method="GET" action="{% url 'suivre_eleve_resultat' %}">
+                    
+                    <div class="form-floating mb-4 position-relative">
+    <input type="text" 
+           name="educmaster" 
+           class="form-control" 
+           id="educInput" 
+           placeholder="Ex: 1234567890123" 
+           minlength="13" 
+           maxlength="13" 
+           pattern="\d{13}" 
+           title="Le numéro EducMaster doit contenir exactement 13 chiffres"
+           required>
+    <label for="educInput" class="text-muted">Numéro EducMaster (13 chiffres)</label>
+    <i class="fas fa-id-card input-group-icon"></i>
+</div>
+
+                    <div class="form-floating mb-4">
+                        <select name="trimestre" class="form-select" id="trimSelect" required>
+                            <option value="" selected disabled>Choisir...</option>
+                            <option value="1">1er Trimestre</option>
+                            <option value="2">2ème Trimestre</option>
+                            <option value="3">3ème Trimestre</option>
+                        </select>
+                        <label for="trimSelect" class="text-muted">Période scolaire</label>
+                    </div>
+                    <div class="form-floating mb-4">
+    <select name="annee" class="form-select" id="anneeSelect" required>
+        <option value="" selected disabled>Choisir l'année...</option>
+        <option value="2025-2026">2025-2026</option>
+        <option value="2026-2027">2026-2027</option>
+        <option value="2027-2028">2027-2028</option>
+    </select>
+    <label for="anneeSelect" class="text-muted">Année Académique</label>
+</div>
+                    <div class="d-flex align-items-start mb-4 p-3 bg-light rounded-3">
+                        <i class="fas fa-info-circle text-primary mt-1 me-2"></i>
+                        <small class="text-muted">
+                            Munissez-vous du matricule officiel de l'élève pour accéder aux bulletins.
+                        </small>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-search w-100 fw-bold">
+                        <i class="fas fa-search me-2"></i> Rechercher les résultats
+                    </button>
+                </form>
+            </div>
+        </div>
+
+       
+
+    </div>
+</div>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+{% endblock %}

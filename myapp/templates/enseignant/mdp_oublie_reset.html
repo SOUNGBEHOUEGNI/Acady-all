@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nouveau mot de passe | Le Trésor de Dowa</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #4A90E2;
+            --secondary: #50E3C2;
+            --dark: #1e293b;
+            --glass: rgba(255, 255, 255, 0.95);
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: radial-gradient(circle at top left, #4A90E2, #50E3C2);
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: var(--glass);
+            backdrop-filter: blur(15px);
+            padding: 40px;
+            border-radius: 28px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        h1 {
+            color: var(--dark);
+            font-size: 26px;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 10px;
+            letter-spacing: -0.5px;
+        }
+
+        p.info {
+            text-align: center;
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+
+        /* Messages Django */
+        .message {
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 13px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .error { background: #fee2e2; color: #ef4444; border: 1px solid #fecaca; }
+        .success { background: #d1fae5; color: #10b981; border: 1px solid #a7f3d0; }
+
+        .form-group {
+            margin-bottom: 18px;
+            position: relative;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 8px;
+            padding-left: 5px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 12px;
+            border: 2px solid #e2e8f0;
+            font-size: 15px;
+            box-sizing: border-box;
+            transition: all 0.3s;
+            background: #fff;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(74, 144, 226, 0.1);
+            outline: none;
+        }
+
+        .conditions {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 12.5px;
+            color: #475569;
+            margin-top: 5px;
+            border: 1px dashed #cbd5e1;
+        }
+
+        .conditions b { color: var(--dark); display: block; margin-bottom: 5px; }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, var(--primary), #357ABD);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 25px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(74, 144, 226, 0.3);
+        }
+
+        /* Petit oeil pour voir le mot de passe */
+        .toggle-password {
+            position: absolute;
+            right: 15px;
+            top: 38px;
+            cursor: pointer;
+            color: #94a3b8;
+            transition: 0.2s;
+        }
+        .toggle-password:hover { color: var(--primary); }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Sécurisation</h1>
+    <p class="info">Définissez votre nouveau mot de passe administrateur.</p>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="message {{ message.tags }}">
+                <i class="fas fa-info-circle me-1"></i> {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label>Nouveau mot de passe</label>
+            <input type="password" name="password1" id="p1" required>
+            <i class="fas fa-eye toggle-password" onclick="toggle('p1')"></i>
+        </div>
+
+        <div class="conditions">
+            <b><i class="fas fa-shield-virus"></i> Politique de sécurité :</b>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px;">
+                <span>• 8 caractères</span>
+                <span>• 1 Chiffre</span>
+                <span>• 1 Symbole (@,$,!)</span>
+                <span>• 1 Majuscule</span>
+            </div>
+        </div>
+
+        <div class="form-group" style="margin-top: 20px;">
+            <label>Confirmer le mot de passe</label>
+            <input type="password" name="password2" id="p2" required>
+            <i class="fas fa-eye toggle-password" onclick="toggle('p2')"></i>
+        </div>
+
+        <button type="submit">
+            Mettre à jour le compte <i class="fas fa-check-double" style="margin-left: 8px;"></i>
+        </button>
+    </form>
+</div>
+
+<script>
+    function toggle(id) {
+        const input = document.getElementById(id);
+        const icon = input.nextElementSibling;
+        if (input.type === "password") {
+            input.type = "text";
+            icon.classList.replace("fa-eye", "fa-eye-slash");
+        } else {
+            input.type = "password";
+            icon.classList.replace("fa-eye-slash", "fa-eye");
+        }
+    }
+</script>
+
+</body>
+</html>

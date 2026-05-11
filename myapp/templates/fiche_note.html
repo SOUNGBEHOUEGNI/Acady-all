@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+
+{% block title %} Liste des élèves de la {{ classe }} {% if serie %}{{ serie }}{% endif %} {% endblock title %}
+
+{% block content %}
+<nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
+    <div class="container-fluid">
+        <a class="navbar-brand mx-auto" href="{% url 'accueil' %}"><strong>{{ school_name }}</strong></a>
+    </div>
+</nav>
+
+<div class="container mt-3 text-center">
+    <button id="download-pdf" class="btn btn-primary shadow-sm">
+        <i class="fas fa-file-pdf me-2"></i>Télécharger la fiche en PDF
+    </button>
+</div>
+
+<div class="container mt-4" id="pdf-content" style="background: white; padding: 15px; border-radius: 8px;">
+    {% if page_obj.number == 1 %}
+    <div class="text-center mb-2">
+        <h4><strong>{{ school_name }}</strong></h4>
+    </div>
+    <div class="text-center mb-3">
+        <h3 style="text-transform: uppercase; text-decoration: underline;">Fiche de notes des élèves</h3>
+    </div>
+    <div class="d-flex justify-content-between">
+        <span><strong>Classe :</strong> {{ classe }} {% if serie %}<span class="text-primary">{{ serie }}</span>{% endif %}</span>
+        <span><strong>Année scolaire :</strong> {{ annee_academique }}</span>
+    </div>
+    <div class="mt-2">
+        <span><strong>Matière :</strong> ............................................................</span>
+    </div>
+    <div class="d-flex justify-content-between mt-2">
+        <span><strong>Trimestre :</strong> ......</span>
+        <span><strong>Coefficient:</strong> .....</span>
+    </div>
+    {% endif %}
+
+    <table class="table table-bordered text-center mt-4 w-100" style="font-size: 11px; table-layout: fixed; border: 1px solid #000;">
+        <thead>
+            <tr class="table-light">
+                <th style="width: 7%; border: 1px solid #000;">N°</th>
+                <th style="width: 25%; border: 1px solid #000;">Nom et Prénoms</th>
+                <th style="width: 6%; border: 1px solid #000;">Sexe</th>
+                <th style="width: 6%; border: 1px solid #000;">Int 1</th>
+                <th style="width: 6%; border: 1px solid #000;">Int 2</th>
+                <th style="width: 6%; border: 1px solid #000;">Int 3</th>
+                <th style="width: 8%; border: 1px solid #000;">Moy. Int</th>
+                <th style="width: 7%; border: 1px solid #000;">Dev 1</th>
+                <th style="width: 7%; border: 1px solid #000;">Dev 2</th>
+                <th style="width: 9%; border: 1px solid #000;">Moy. Dev</th>
+                <th style="width: 13%; border: 1px solid #000;">Moy. Générale</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for eleve in eleves %}
+            <tr style="page-break-inside: avoid; height: 30px;">
+                <td style="border: 1px solid #000; vertical-align: middle;">{{ eleve.numero_global }}</td>
+                <td style="border: 1px solid #000; text-align: left; padding-left: 5px; vertical-align: middle;">
+                    {{ eleve.nom }} {{ eleve.prenoms }}
+                </td>
+                <td style="border: 1px solid #000; vertical-align: middle;">{{ eleve.sexe }}</td>
+                <td style="border: 1px solid #000;"></td>
+                <td style="border: 1px solid #000;"></td>
+                <td style="border: 1px solid #000;"></td>
+                <td style="border: 1px solid #000;"></td>
+                <td style="border: 1px solid #000;"></td>
+                <td style="border: 1px solid #000;"></td>
+                <td style="border: 1px solid #000;"></td>
+                <td style="border: 1px solid #000;"></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+    <div class="pagination d-print-none mt-4">
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Précédent</a></li>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                    <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                    </li>
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Suivant</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script>
+    document.getElementById("download-pdf").addEventListener("click", function () {
+        const element = document.getElementById("pdf-content");
+        
+        // Nom de fichier dynamique avec série
+        const className = "{{ classe }}";
+        const serieName = "{% if serie %}_{{ serie }}{% endif %}";
+        const fileName = `fiche_notes_${className}${serieName}.pdf`;
+
+        const opt = {
+            margin: [10, 5, 10, 5], 
+            filename: fileName,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        html2pdf().set(opt).from(element).save();
+    });
+</script>
+
+{% block extra_css %}
+<style>
+    /* Styles pour l'écran */
+    .table thead th {
+        background-color: #f8f9fa;
+        font-weight: bold;
+    }
+
+    /* Styles pour l'export PDF et l'impression */
+    @media print {
+        @page {
+            size: A4 portrait;
+            margin: 10mm;
+        }
+
+        body {
+            font-family: 'Times New Roman', serif;
+            background-color: white !important;
+        }
+
+        .pagination, #download-pdf, .navbar {
+            display: none !important;
+        }
+
+        #pdf-content {
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        .table {
+            width: 100% !important;
+            border-collapse: collapse !important;
+        }
+
+        .table th, .table td {
+            border: 1px solid black !important;
+            padding: 4px !important;
+        }
+    }
+</style>
+{% endblock extra_css %}
+
+{% endblock content %}

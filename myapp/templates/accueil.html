@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="fr">
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="{% static 'acady.png' %}" type="image/png">
+    <title>Acadynote | Dashboard</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-light: #dbeafe;
+            --secondary: #64748b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg: #f8fafc;
+            --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg);
+            color: #0f172a;
+        }
+
+        /* NAVBAR */
+        .navbar {
+            background: rgba(255, 255, 255, 0.8) !important;
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+            padding: 0.8rem 0;
+        }
+
+        .navbar-brand {
+            font-weight: 800;
+            color: var(--primary) !important;
+            font-size: 1.4rem;
+        }
+
+        .nav-link {
+            color: var(--secondary) !important;
+            font-weight: 600;
+            font-size: 0.9rem;
+            border-radius: 10px;
+            padding: 8px 16px !important;
+            transition: all 0.2s;
+        }
+
+        .nav-link:hover {
+            color: var(--primary) !important;
+            background: var(--primary-light);
+        }
+
+        /* TITRE ECOLE */
+        .header-section {
+            padding: 60px 0 40px;
+            text-align: center;
+        }
+
+        .school-title {
+            font-size: clamp(32px, 6vw, 48px);
+            font-weight: 800;
+            letter-spacing: -1px;
+            background: linear-gradient(135deg, #1e293b 0%, #2563eb 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .section-divider {
+            margin: 50px 0 30px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: var(--secondary);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9rem;
+        }
+
+        /* TOOL CARDS */
+        .tool-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid #f1f5f9;
+            box-shadow: var(--card-shadow);
+            transition: transform 0.3s;
+        }
+
+        .btn-action {
+            background: var(--primary);
+            border: none;
+            border-radius: 12px;
+            padding: 10px 20px;
+            color: white;
+            font-weight: 700;
+            transition: 0.3s;
+        }
+
+        .btn-action:hover {
+            background: #1d4ed8;
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.2);
+        }
+
+        /* CLASSE CARDS */
+        .card-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 24px;
+        }
+
+        .class-card {
+            background: white;
+            border-radius: 24px;
+            padding: 25px;
+            border: 1px solid #f1f5f9;
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .class-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.1);
+            border-color: var(--card-color);
+        }
+
+        .class-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 14px;
+            background: var(--card-light);
+            color: var(--card-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+        }
+
+        .class-card h3 a {
+            color: #1e293b;
+            text-decoration: none;
+            font-weight: 800;
+            font-size: 1.3rem;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #f8fafc;
+        }
+
+        .stat-label { color: #64748b; font-size: 0.85rem; font-weight: 500; }
+        .stat-value { color: #0f172a; font-weight: 700; }
+
+        .progress { height: 6px; border-radius: 10px; margin-top: 15px; background-color: #f1f5f9; }
+
+        footer {
+            margin-top: 100px;
+            padding: 40px 0;
+            background: white;
+            border-top: 1px solid #e2e8f0;
+        }
+    </style>
+</head>
+
+<body>
+
+<nav class="navbar navbar-expand-lg sticky-top">
+    <div class="container">
+        <a class="navbar-brand" href="#"><i class="fas fa-layer-group me-2"></i>Acadynote</a>
+        <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#menu">
+            <i class="fas fa-bars text-primary"></i>
+        </button>
+
+        <div class="collapse navbar-collapse" id="menu">
+            <ul class="navbar-nav ms-auto gap-1">
+                <li class="nav-item"><a class="nav-link" href="{% url 'resultats_annuels' %}"><i class="far fa-chart-bar me-1"></i> Résultats</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'suivre_eleve' %}"><i class="fas fa-fingerprint me-1"></i> Suivre</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'liste_enseignants' %}"><i class="fas fa-user-tie me-1"></i> Enseignants</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'heures_mensuelles_recap' %}">Statistiques d'heures</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'enregistrer_eleve' %}"><i class="fas fa-plus-circle me-1"></i> Inscription</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'liste_absents' %}"><i class="fas fa-calendar-check me-1"></i> Absents</a></li>
+                <li class="nav-item ms-lg-3">
+                    <form action="{% url 'logout' %}" method="post" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-light px-3 text-danger fw-bold border-0">
+                            <i class="fas fa-sign-out-alt me-1"></i> Quitter
+                        </button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <header class="header-section">
+        <h1 class="school-title">{{ school_name }}</h1>
+        <p class="text-muted fw-500">Gestion académique • Année Scolaire {{ annee_academique }}</p>
+    </header>
+
+    <div class="row g-4 justify-content-center">
+   
+    <div class="col-md-3">
+    <div class="tool-card h-100" style="border-top: 4px solid #6366f1;">
+        <label class="small fw-bold text-uppercase mb-3" style="color: #6366f1;">
+            <i class="fas fa-user-shield me-2"></i>Responsabilités
+        </label>
+        <div class="d-grid">
+            <a href="{% url 'gestion_pp' %}" class="btn fw-bold py-3 shadow-sm" style="background-color: #6366f1; color: white;">
+                <i class="fas fa-chalkboard-teacher me-2"></i>Professeurs Principaux
+            </a>
+            <p class="text-muted small mt-2 mb-0 text-center">Assigner les titulaires par classe</p>
+        </div>
+    </div>
+</div>
+    <div class="col-md-3">
+        <div class="tool-card h-100">
+            <label class="small fw-bold text-muted mb-2 text-uppercase">Année Académique</label>
+            <form method="GET">
+                <div class="input-group">
+                    <input type="text" name="annee" class="form-control border-0 bg-light" placeholder="Ex: 2025-2026" value="{{ annee_academique }}">
+                    <button class="btn btn-primary px-3 shadow-none"><i class="fas fa-sync-alt"></i></button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="tool-card h-100" style="border-top: 4px solid var(--danger);">
+            <label class="small fw-bold text-danger mb-3 text-uppercase">
+                <i class="fas fa-user-clock me-2"></i>Suivi Enseignants
+            </label>
+            <div class="d-grid gap-2">
+                <a href="{% url 'rapport_heures_prof' %}" class="btn btn-primary fw-bold py-2 shadow-sm">
+                    <i class="fas fa-clock me-2"></i>Rapport des Heures
+                </a>
+                <a href="{% url 'liste_attente_enseignants' %}" class="btn btn-outline-danger d-flex justify-content-between align-items-center py-2">
+                    <span><i class="fas fa-user-plus me-2"></i>Adhésions</span>
+                    <span class="badge bg-danger rounded-pill">{{ enseignants_en_attente_count|default:"0" }}</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <div class="section-divider">
+        <i class="fas fa-school"></i> Premier Cycle (Collège)
+    </div>
+    <div class="card-container">
+        <div class="class-card" style="--card-color: var(--primary); --card-light: var(--primary-light);">
+            <div class="class-icon"><i class="fas fa-users"></i></div>
+            <h3><a href="{% url 'afficher_college' classe='6ème' annee=annee_academique %}">6<sup>ème</sup></a></h3>
+            <div class="stat-item"><span class="stat-label">Total</span> <span class="stat-value">{{ statistiques_sixieme.total_eleves }}</span></div>
+            <div class="stat-item"><span class="stat-label text-primary">Garçons</span> <span class="stat-value text-primary">{{ statistiques_sixieme.garçons }}</span></div>
+            <div class="stat-item"><span class="stat-label text-danger">Filles</span> <span class="stat-value text-danger">{{ statistiques_sixieme.filles }}</span></div>
+            <div class="progress"><div class="progress-bar bg-primary" style="width: 100%"></div></div>
+        </div>
+
+        <div class="class-card" style="--card-color: var(--warning); --card-light: #fef3c7;">
+            <div class="class-icon"><i class="fas fa-book-open"></i></div>
+            <h3><a href="{% url 'afficher_college' classe='5ème' annee=annee_academique %}">5<sup>ème</sup></a></h3>
+            <div class="stat-item"><span class="stat-label">Total</span> <span class="stat-value">{{ statistiques_cinquieme.total_eleves }}</span></div>
+            <div class="stat-item"><span class="stat-label text-primary">Garçons</span> <span class="stat-value text-primary">{{ statistiques_cinquieme.garçons }}</span></div>
+            <div class="stat-item"><span class="stat-label text-danger">Filles</span> <span class="stat-value text-danger">{{ statistiques_cinquieme.filles }}</span></div>
+            <div class="progress"><div class="progress-bar bg-warning" style="width: 100%"></div></div>
+        </div>
+
+        <div class="class-card" style="--card-color: var(--success); --card-light: #d1fae5;">
+            <div class="class-icon"><i class="fas fa-vial"></i></div>
+            <h3><a href="{% url 'afficher_college' classe='4ème' annee=annee_academique %}">4<sup>ème</sup></a></h3>
+            <div class="stat-item"><span class="stat-label">Total</span> <span class="stat-value">{{ statistiques_quatrieme.total_eleves }}</span></div>
+            <div class="stat-item"><span class="stat-label text-primary">Garçons</span> <span class="stat-value text-primary">{{ statistiques_quatrieme.garçons }}</span></div>
+            <div class="stat-item"><span class="stat-label text-danger">Filles</span> <span class="stat-value text-danger">{{ statistiques_quatrieme.filles }}</span></div>
+            <div class="progress"><div class="progress-bar bg-success" style="width: 100%"></div></div>
+        </div>
+
+        <div class="class-card" style="--card-color: #8b5cf6; --card-light: #ede9fe;">
+            <div class="class-icon"><i class="fas fa-graduation-cap"></i></div>
+            <h3><a href="{% url 'afficher_college' classe='3ème' annee=annee_academique %}">3<sup>ème</sup></a></h3>
+            <div class="stat-item"><span class="stat-label">Total</span> <span class="stat-value">{{ statistiques_troisieme.total_eleves }}</span></div>
+            <div class="stat-item"><span class="stat-label text-primary">Garçons</span> <span class="stat-value text-primary">{{ statistiques_troisieme.garçons }}</span></div>
+            <div class="stat-item"><span class="stat-label text-danger">Filles</span> <span class="stat-value text-danger">{{ statistiques_troisieme.filles }}</span></div>
+            <div class="progress"><div class="progress-bar" style="width: 100%; background: #8b5cf6;"></div></div>
+        </div>
+    </div>
+
+    <div class="section-divider">
+        <i class="fas fa-university"></i> Second Cycle (Lycée)
+    </div>
+    <div class="card-container">
+    {% for classe in stats_lycee %}
+    <div class="class-card" style="--card-color: #4f46e5; --card-light: #eef2ff;">
+        <div class="class-icon"><i class="fas fa-flask"></i></div>
+        
+        <h3>
+    <a href="{% url 'afficher_lycee' classe=classe.classe_nom serie=classe.serie_nom annee=annee_academique %}">
+        {{ classe.classe_nom }} <sup>{{ classe.serie_nom }}</sup>
+    </a>
+</h3>
+        
+        <div class="stat-item">
+            <span class="stat-label">Total</span> 
+            <span class="stat-value">{{ classe.total_eleves }}</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-label text-primary">Garçons</span> 
+            <span class="stat-value text-primary">{{ classe.garçons }}</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-label text-danger">Filles</span> 
+            <span class="stat-value text-danger">{{ classe.filles }}</span>
+        </div>
+        
+        <div class="progress">
+            <div class="progress-bar" style="width: 100%; background: #4f46e5;"></div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12 text-center py-4">
+        <p class="text-muted italic">Aucune donnée disponible pour le lycée sur cette année.</p>
+    </div>
+    {% endfor %}
+</div>
+</div>
+
+<footer>
+    <div class="container text-center">
+        <p class="mb-2 fw-800 text-primary">ACADYNOTE</p>
+        <p class="text-muted small">© 2026 — Plateforme de Gestion Scolaire Intelligente</p>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

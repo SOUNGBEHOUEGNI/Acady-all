@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Liste des absents{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-dark: #2c3e50;
+        --accent-color: #3498db;
+        --danger-red: #d9534f;
+    }
+
+    .admin-card {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.05);
+        padding: 30px;
+        margin-top: 20px;
+    }
+
+    .class-divider {
+        background: linear-gradient(90deg, #f39c12, #e67e22);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: bold;
+        margin: 30px 0 15px 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .custom-table {
+        border-radius: 8px;
+        overflow: hidden;
+        border: none;
+    }
+    .custom-table thead { background-color: var(--primary-dark); color: white; }
+    .custom-table th { font-size: 0.8rem; text-transform: uppercase; padding: 15px !important; }
+    .custom-table td { vertical-align: middle; font-size: 0.9rem; }
+
+    .motif-badge {
+        background: #f8f9fa;
+        color: #636e72;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        border: 1px solid #dfe6e9;
+    }
+
+    .no-print-zone { max-width: 1000px; margin: 0 auto; }
+
+    @media print {
+        .no-print { display: none !important; }
+    }
+</style>
+
+<div class="container pb-5">
+    
+    <div class="no-print-zone no-print mt-4">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="card border-0 shadow-sm p-3 mb-4 bg-light">
+            <form method="GET" class="row g-2 align-items-center">
+                <div class="col-auto">
+                    <label class="fw-bold small text-muted">Date :</label>
+                </div>
+                <div class="col-md-3">
+                    <input type="date" name="date" class="form-control border-primary-subtle" value="{{ date_filter }}">
+                </div>
+                <div class="col-auto">
+    <button type="submit" class="btn btn-primary">
+        <i class="bi bi-funnel"></i> Filtrer
+    </button>
+    
+    <a href="{% url 'accueil' %}" class="btn btn-outline-secondary ms-2">
+        <i class="bi bi-arrow-left"></i> Retour
+    </a>
+    
+    {% if classes %}
+    <button type="submit" name="notifier" value="1" class="btn btn-warning text-white ms-2" onclick="return confirm('Voulez-vous envoyer un mail d\'alerte à tous les parents des élèves absents listés ci-dessous ?');">
+        <i class="bi bi-envelope-at"></i> Notifier les Parents
+    </button>
+    
+    <button id="btnPDF" type="button" class="btn btn-danger ms-2">
+        <i class="bi bi-file-pdf"></i> Exporter PDF
+    </button>
+    {% endif %}
+</div>
+            </form>
+        </div>
+    </div>
+
+    <div id="zonePDF" class="admin-card">
+        
+        <div class="text-center mb-4 border-bottom pb-4">
+            <h1 class="fw-bold text-uppercase mb-1" style="color: var(--primary-dark); letter-spacing: 1px;">
+                CEPG LE TRESOR DE DOWA
+            </h1>
+            <h3 class="text-secondary fw-light">Rapport Journalier des Absences</h3>
+            {% if date_filter %}
+                <span class="badge bg-info text-dark mt-2 fs-6 px-3 py-2">
+                    📅 Date du {{ date_filter }}
+                </span>
+            {% endif %}
+        </div>
+
+        {% if classes %}
+            {% for classe, absents in classes.items %}
+            <div class="mb-5">
+                <div class="class-divider shadow-sm">
+                    <span><i class="bi bi-people-fill me-2"></i> CLASSE : {{ classe }}</span>
+                    <small>{{ absents|length }} absent(s)</small>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table custom-table table-hover border">
+                        <thead>
+                            <tr>
+                                <th>Élève</th>
+                                <th>Parent / Contact</th>
+                                <th>Motif</th>
+                                <th>Matière</th>
+                                <th>Horaire</th>
+                                <th class="no-print">Statut Notification</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for p in absents %}
+                            <tr>
+                                <td class="fw-bold text-dark">
+                                    {{ p.eleve.nom }} <span class="text-muted fw-normal">{{ p.eleve.prenoms }}</span>
+                                </td>
+                                <td>
+                                    <small class="text-muted d-block">{{ p.eleve.email_parent|default:"Pas d'email" }}</small>
+                                    <!--<small class="text-muted">{{ p.eleve.telephone_parent|default:"Pas de contact" }}</small> -->
+                                </td>
+                                <td><span class="motif-badge">{{ p.motif }}</span></td>
+                                <td class="text-primary fw-semibold">{{ p.horaire.matiere }}</td>
+                                <td>
+                                    <small class="text-muted">
+                                        {{ p.horaire.heure_debut|time:"H:i" }} - {{ p.horaire.heure_fin|time:"H:i" }}
+                                    </small>
+                                </td>
+                                <td class="no-print">
+                                    {% if p.eleve.email_parent %}
+                                        <span class="badge bg-success-subtle text-success">Prêt à notifier</span>
+                                    {% else %}
+                                        <span class="badge bg-danger-subtle text-danger">Email manquant</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-check2-circle text-success" style="font-size: 4rem;"></i>
+                <p class="fs-4 text-muted mt-3">Aucun absent enregistré pour cette date.</p>
+            </div>
+        {% endif %}
+
+        <div class="mt-5 pt-3 border-top d-none d-print-block">
+            <div class="row text-muted small">
+                <div class="col-6">Généré par Acadynote le {% now "d/m/Y H:i" %}</div>
+                <div class="col-6 text-end">Signature du Surveillant : ________________</div>
+            </div>
+        </div>
+    </div> 
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script>
+document.getElementById("btnPDF").addEventListener("click", function () {
+    const element = document.getElementById('zonePDF');
+    const opt = {
+        margin: [10, 5, 10, 5],
+        filename: 'Absences_{{ date_filter|default:"liste" }}.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+    };
+    html2pdf().set(opt).from(element).save();
+});
+</script>
+{% endblock %}

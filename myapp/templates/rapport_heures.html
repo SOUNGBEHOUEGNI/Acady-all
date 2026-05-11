@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    /* Style pour le bouton retour */
+    .btn-back {
+        display: inline-flex;
+        align-items: center;
+        text-decoration: none;
+        color: #64748b;
+        font-weight: 600;
+        transition: 0.2s;
+        margin-bottom: 1.5rem;
+    }
+    .btn-back:hover {
+        color: #2563eb;
+        transform: translateX(-3px);
+    }
+    .btn-back i {
+        margin-right: 8px;
+    }
+
+    /* Style pour le badge de jour */
+    .day-label {
+        font-size: 0.75rem;
+        letter-spacing: 0.05em;
+        font-weight: 700;
+        color: #2563eb;
+        text-transform: uppercase;
+    }
+
+    /* Fix pour le tableau sur Edge */
+    .table-container {
+        border-radius: 12px;
+        overflow: hidden; /* Empêche les bords carrés du tableau de dépasser */
+        border: 1px solid #e2e8f0;
+    }
+    
+    .table tfoot {
+        border-top: 2px solid #1e293b;
+    }
+</style>
+
+<div class="container py-5">
+    <div class="mb-4">
+        <a href="{% url 'accueil' %}" class="btn-back">
+            <i class="fas fa-arrow-left"></i> Retour au tableau de bord
+        </a>
+        <h2 class="fw-extrabold text-dark m-0">Récapitulatif des heures de cours</h2>
+        <p class="text-muted">Suivi de la présence et des vacations des enseignants</p>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-4" style="border-radius: 12px;">
+        <div class="card-body p-4">
+            <form method="GET" class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label fw-bold small text-secondary">Filtrer par Enseignant</label>
+                    <select name="enseignant" class="form-select border-light-subtle shadow-sm">
+                        <option value="">Tous les professeurs</option>
+                        {% for p in profs %}
+                        <option value="{{ p.id }}" {% if request.GET.enseignant == p.id|slugify %}selected{% endif %}>
+                            {{ p.nom }} {{ p.prenoms }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold small text-secondary">Sélectionner le Mois</label>
+                    <input type="month" name="mois" class="form-control border-light-subtle shadow-sm" value="{{ request.GET.mois }}">
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary w-100 fw-bold shadow-sm" style="height: 46px;">
+                        <i class="fas fa-filter me-2"></i> Appliquer le filtre
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="table-container shadow-sm bg-white">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th class="ps-4 py-3">Date & Jour</th>
+                        <th>Classe</th>
+                        <th>Horaire du cours</th>
+                        <th class="text-center">Dureé</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in rapports %}
+                    <tr>
+                        <td class="ps-4">
+                            <div class="fw-bold">{{ r.date|date:"d/m/Y" }}</div>
+                            <div class="day-label">{{ r.date|date:"l" }}</div>
+                        </td>
+                        <td>
+                            <span class="badge bg-light text-dark border">{{ r.classe }}</span>
+                        </td>
+                        <td class="text-muted">
+                            <i class="far fa-clock me-1"></i> {{ r.horaire.heure_debut }} - {{ r.horaire.heure_fin }}
+                        </td>
+                        <td class="text-center">
+                            <span class="fw-bold text-dark">{{ r.duree|floatformat:2 }} h</span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center py-5">
+                            <div class="text-muted">
+                                <i class="fas fa-info-circle fa-2x mb-3"></i><br>
+                                Aucune séance enregistrée pour cette sélection.
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                {% if rapports %}
+                <tfoot class="bg-light">
+                    <tr>
+                        <td colspan="3" class="text-end py-3 fw-bold text-uppercase">Total cumulé du mois :</td>
+                        <td class="text-center py-3">
+                            <span class="h5 fw-bold text-danger mb-0">{{ total_heures|floatformat:2 }} h</span>
+                        </td>
+                    </tr>
+                </tfoot>
+                {% endif %}
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

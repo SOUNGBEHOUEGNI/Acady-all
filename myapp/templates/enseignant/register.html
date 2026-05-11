@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscription Enseignant | Acadynote</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-glow: rgba(79, 70, 229, 0.4);
+            --secondary: #6366f1;
+            --bg-dark: #140f2a;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --success: #10b981;
+            --accent-purple: #9333ea;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+
+        body {
+            background: radial-gradient(circle at top right, #1e293b, #0f172a);
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; padding: 40px 20px; color: var(--text-main);
+        }
+
+        .container {
+            background: var(--card-bg); backdrop-filter: blur(10px);
+            padding: 45px; border-radius: 32px; width: 100%; max-width: 700px;
+            border: 1px solid rgba(255, 255, 255, 0.3); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+        }
+
+        h1 {
+            text-align: center; margin-bottom: 35px; font-size: 28px; font-weight: 800;
+            background: linear-gradient(to right, var(--primary), var(--accent-purple));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+
+        label {
+            font-weight: 700; display: block; margin-top: 24px; margin-bottom: 8px;
+            color: #334155; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+
+        input[type="text"], input[type="email"], input[type="password"] {
+            width: 100%; padding: 14px 18px; border: 2px solid #f1f5f9;
+            border-radius: 16px; font-size: 15px; background: #f8fafc;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            border-color: var(--primary); outline: none; background: #fff;
+            box-shadow: 0 0 0 4px var(--primary-glow); transform: translateY(-1px);
+        }
+
+        .checkbox-group {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 10px; margin-top: 10px; background: #f1f5f9; padding: 15px;
+            border-radius: 20px; border: 1px solid var(--border-color);
+        }
+
+        .checkbox-group label {
+            display: flex; align-items: center; gap: 10px; margin-top: 0;
+            font-size: 13px; font-weight: 600; cursor: pointer; color: #475569;
+            background: white; padding: 8px 12px; border-radius: 12px;
+            text-transform: none; transition: 0.2s; border: 1px solid transparent;
+        }
+
+        .checkbox-group label:hover { border-color: var(--primary); color: var(--primary); }
+
+        .group-title {
+            grid-column: 1 / -1; font-size: 11px; font-weight: 800;
+            padding: 10px 0 5px 0; border-bottom: 1px solid #e2e8f0; margin-bottom: 5px;
+        }
+
+        /* Styles pour les sous-séries */
+        .sub-series {
+            display: none; grid-column: 1 / -1;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 8px; padding: 10px; background: #fdf2f8;
+            border-radius: 12px; border: 1px dashed #f472b6; margin-top: 5px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .pwd-validator {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+            margin-top: 10px; padding: 12px; background: white;
+            border: 2px solid #f1f5f9; border-radius: 16px;
+        }
+        .pwd-validator label { margin: 0; font-size: 11px; text-transform: none; color: var(--text-muted); background: none; padding: 0; }
+        .pwd-validator input:checked + span { color: var(--success); font-weight: 800; }
+
+        button[type="submit"] {
+            width: 100%; padding: 18px; margin-top: 35px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none; border-radius: 18px; color: white;
+            font-size: 17px; font-weight: 800; cursor: pointer; transition: 0.3s;
+        }
+
+        .login-footer {
+            text-align: center; margin-top: 35px; padding-top: 25px;
+            border-top: 1px solid var(--border-color);
+        }
+        .login-footer a {
+            color: var(--primary); font-weight: 800; text-decoration: none;
+            margin-left: 8px; padding: 10px 20px; border-radius: 12px;
+            background: #f1f5f9; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 8px;
+        }
+        .login-footer a:hover { background: var(--primary); color: white; box-shadow: 0 5px 15px var(--primary-glow); }
+
+        .message { padding: 15px; border-radius: 16px; margin-bottom: 20px; font-weight: 700; text-align: center; font-size: 14px; }
+        .error { background: #fff1f2; color: #e11d48; border: 1px solid #ffe4e6; }
+    </style>
+</head>
+
+<body>
+<div class="container">
+    <h1>Inscription Enseignant</h1>
+
+    {% if error %}
+        <p class="message error"><i class="fas fa-exclamation-circle"></i> {{ error }}</p>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div><label>Nom</label><input type="text" name="nom" required></div>
+            <div><label>Prénoms</label><input type="text" name="prenoms" required></div>
+        </div>
+
+        <label>Email</label>
+        <input type="email" name="email" placeholder="votre@email.com" required>
+
+        <label>Mot de passe</label>
+        <input type="password" name="password" id="password" required>
+        <div class="pwd-validator">
+            <label><input type="checkbox" id="len" disabled> <span>8+ carac.</span></label>
+            <label><input type="checkbox" id="letter" disabled> <span>Lettre</span></label>
+            <label><input type="checkbox" id="digit" disabled> <span>Chiffre</span></label>
+            <label><input type="checkbox" id="special" disabled> <span>Symbole</span></label>
+        </div>
+
+        <label>Disciplines enseignées</label>
+        <div class="checkbox-group">
+            <div class="group-title" style="color: var(--primary);">LITTÉRATURE & LANGUES</div>
+            <label><input type="checkbox" name="matieres" value="Communication-Ecrite"> Com. Écrite</label>
+            <label><input type="checkbox" name="matieres" value="Lecture"> Lecture</label>
+            <label><input type="checkbox" name="matieres" value="Français"> Français</label>
+            <label><input type="checkbox" name="matieres" value="Histoire-Geographie"> Histoire-Géographie</label>
+            <label><input type="checkbox" name="matieres" value="Philosophie"> Philosophie</label>
+            <label><input type="checkbox" name="matieres" value="Anglais"> Anglais</label>
+            <label><input type="checkbox" name="matieres" value="Allemand"> Allemand</label>
+            <label><input type="checkbox" name="matieres" value="Espagnol"> Espagnol</label>
+            
+            
+            <div class="group-title" style="color: var(--success);">SCIENCES & AUTRES</div>
+            <label><input type="checkbox" name="matieres" value="Mathématiques"> Maths</label>
+            <label><input type="checkbox" name="matieres" value="PCT"> PCT</label>
+            <label><input type="checkbox" name="matieres" value="SVT"> SVT</label>
+            <label><input type="checkbox" name="matieres" value="EPS"> EPS</label>
+            <label><input type="checkbox" name="matieres" value="Informatique"> Informatique</label>
+            <label><input type="checkbox" name="matieres" value="Economie"> Économie</label>
+        </div>
+
+        <label>Classes attribuées</label>
+        <div class="checkbox-group">
+            <div class="group-title" style="color: var(--primary);">PREMIER CYCLE</div>
+            <label><input type="checkbox" name="classes" value="6ème"> 6ème</label>
+            <label><input type="checkbox" name="classes" value="5ème"> 5ème</label>
+            <label><input type="checkbox" name="classes" value="4ème"> 4ème</label>
+            <label><input type="checkbox" name="classes" value="3ème"> 3ème</label>
+
+            <div class="group-title" style="color: var(--accent-purple);">SECOND CYCLE (Lier séries)</div>
+            
+            <label><input type="checkbox" name="classes" value="2nde" onchange="toggleSpecificSeries(this, 's-2nde')"> 2nde</label>
+            <div id="s-2nde" class="sub-series">
+                <label><input type="checkbox" name="series_2nde" value="A"> A</label>
+                <label><input type="checkbox" name="series_2nde" value="B"> B</label>
+                <label><input type="checkbox" name="series_2nde" value="C"> C</label>
+                <label><input type="checkbox" name="series_2nde" value="D"> D</label>
+            </div>
+
+            <label><input type="checkbox" name="classes" value="1ère" onchange="toggleSpecificSeries(this, 's-1ere')"> 1ère</label>
+            <div id="s-1ere" class="sub-series">
+                <label><input type="checkbox" name="series_1ère" value="A1"> A1</label>
+                <label><input type="checkbox" name="series_1ère" value="A2"> A2</label>
+                <label><input type="checkbox" name="series_1ère" value="B"> B</label>
+                <label><input type="checkbox" name="series_1ère" value="C"> C</label>
+                <label><input type="checkbox" name="series_1ère" value="D"> D</label>
+            </div>
+
+            <label><input type="checkbox" name="classes" value="Tle" onchange="toggleSpecificSeries(this, 's-tle')"> Tle</label>
+            <div id="s-tle" class="sub-series">
+                <label><input type="checkbox" name="series_tle" value="A1"> A1</label>
+                <label><input type="checkbox" name="series_tle" value="A2"> A2</label>
+                <label><input type="checkbox" name="series_tle" value="B"> B</label>
+                <label><input type="checkbox" name="series_tle" value="C"> C</label>
+                <label><input type="checkbox" name="series_tle" value="D"> D</label>
+            </div>
+        </div>
+
+        <label>Année académique</label>
+        <input type="text" name="annee_academique" value="{{ annee_auto }}" readonly>
+
+        <button type="submit">Créer mon profil <i class="fas fa-arrow-right"></i></button>
+    </form>
+
+    <div class="login-footer">
+        <p>Déjà membre ? <a href="{% url 'enseignant_login' %}"><i class="fas fa-sign-in-alt"></i> Se connecter</a></p>
+    </div>
+</div>
+
+<script>
+// Validation mot de passe
+document.getElementById('password').addEventListener('input', function() {
+    const pwd = this.value;
+    document.getElementById("len").checked = pwd.length >= 8;
+    document.getElementById("letter").checked = /[A-Za-z]/.test(pwd);
+    document.getElementById("digit").checked = /\d/.test(pwd);
+    document.getElementById("special").checked = /[!@#$%^&*(),.?":{}|<>]/.test(pwd);
+});
+
+// Affichage dynamique des séries par classe
+function toggleSpecificSeries(checkbox, elementId) {
+    const element = document.getElementById(elementId);
+    if (checkbox.checked) {
+        element.style.display = 'grid';
+    } else {
+        element.style.display = 'none';
+        element.querySelectorAll('input').forEach(i => i.checked = false);
+    }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}Modifier Horaire | Acadynote{% endblock %}
+
+{% block content %}
+<style>
+    .edit-container {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        padding: 30px;
+        border: 1px solid #f0f2f5;
+    }
+    .teacher-info {
+        background: #f8faff;
+        border-radius: 12px;
+        padding: 15px 25px;
+        border-left: 5px solid #2563eb;
+        margin-bottom: 30px;
+    }
+    .table thead th {
+        background-color: #f1f5f9;
+        color: #475569;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 1px;
+        border: none;
+        padding: 15px;
+    }
+    .form-control-edit {
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 8px 12px;
+        font-size: 0.9rem;
+        transition: all 0.2s;
+    }
+    .form-control-edit:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        outline: none;
+    }
+    .btn-update {
+        background-color: #10b981;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 8px 15px;
+        font-weight: 600;
+        transition: 0.3s;
+    }
+    .btn-update:hover {
+        background-color: #059669;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2);
+    }
+</style>
+
+<div class="container mt-5">
+    <div class="edit-container animate__animated animate__fadeIn">
+        <div class="teacher-info d-flex justify-content-between align-items-center">
+            <div>
+                <h4 class="mb-1 fw-bold text-dark">Modification du Planning</h4>
+                <span class="text-primary fw-medium">
+                    <i class="fas fa-user-tie me-2"></i>{{ enseignant.nom }} {{ enseignant.prenoms }}
+                </span>
+            </div>
+            <a href="{% url 'liste_enseignants' %}" class="btn btn-outline-secondary btn-sm rounded-pill">
+                <i class="fas fa-arrow-left me-1"></i> Annuler
+            </a>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-success border-0 shadow-sm d-flex align-items-center">
+                    <i class="fas fa-check-circle me-2"></i> {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="table-responsive mt-4">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th style="width: 20%;">Classe</th>
+                        <th style="width: 20%;">Jour</th>
+                        <th>Début</th>
+                        <th>Fin</th>
+                        <th class="text-center">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for horaire in horaires %}
+                    <tr>
+                        <form method="POST">
+                            {% csrf_token %}
+                            <input type="hidden" name="horaire_id" value="{{ horaire.id }}">
+                            <td>
+                                <select name="classe" class="form-select form-control-edit">
+                                    {% for c in classes %}
+                                        <option value="{{ c }}" {% if horaire.classe == c %}selected{% endif %}>{{ c }}</option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            <td>
+                                <select name="jour" class="form-select form-control-edit">
+                                    {% for j in jours %}
+                                        <option value="{{ j }}" {% if horaire.jour == j %}selected{% endif %}>{{ j }}</option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            <td>
+                                <input type="time" name="heure_debut" value="{{ horaire.heure_debut|time:'H:i' }}" class="form-control form-control-edit">
+                            </td>
+                            <td>
+                                <input type="time" name="heure_fin" value="{{ horaire.heure_fin|time:'H:i' }}" class="form-control form-control-edit">
+                            </td>
+                            <td class="text-center">
+                                <button type="submit" class="btn btn-update btn-sm">
+                                    <i class="fas fa-sync-alt me-1"></i> Mettre à jour
+                                </button>
+                            </td>
+                        </form>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="py-5 text-center text-muted">
+                            <i class="fas fa-calendar-times fa-3x mb-3 opacity-20"></i><br>
+                            Aucun créneau à modifier pour cet enseignant.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+{% endblock %}

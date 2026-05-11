@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}Ajouter Horaire | Acadynote{% endblock %}
+
+{% block content %}
+<style>
+    .planning-card {
+        max-width: 600px;
+        margin: 50px auto;
+        background: #ffffff;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        border: none;
+        overflow: hidden;
+    }
+    .card-header-custom {
+        background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+        color: white;
+        padding: 30px;
+        text-align: center;
+    }
+    .form-container {
+        padding: 40px;
+    }
+    .form-label {
+        font-weight: 600;
+        color: #4b5563;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .form-control, .form-select {
+        border-radius: 12px;
+        padding: 12px;
+        border: 1px solid #e5e7eb;
+        transition: all 0.3s ease;
+    }
+    .form-control:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+    }
+    .teacher-badge {
+        background: #eff6ff;
+        color: #2563eb;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        display: inline-block;
+        margin-top: 5px;
+    }
+    .btn-save {
+        background: #2563eb;
+        border: none;
+        padding: 12px;
+        border-radius: 12px;
+        font-weight: 600;
+        width: 100%;
+        transition: 0.3s;
+    }
+    .btn-save:hover {
+        background: #1e40af;
+        transform: translateY(-2px);
+    }
+    .input-group-text {
+        background: transparent;
+        border-right: none;
+        color: #9ca3af;
+    }
+    .has-icon .form-control {
+        border-left: none;
+    }
+</style>
+
+<div class="container">
+    <div class="planning-card animate__animated animate__fadeInUp">
+        <div class="card-header-custom">
+            <i class="fas fa-calendar-plus fa-3x mb-3"></i>
+            <h3 class="mb-0">Nouvel Horaire</h3>
+            <div class="teacher-badge">
+                <i class="fas fa-user-tie me-1"></i> {{ enseignant.nom }} {{ enseignant.prenoms }}
+            </div>
+        </div>
+
+        <div class="form-container">
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label" for="classe">
+                            <i class="fas fa- chalkboard text-primary"></i> Classe
+                        </label>
+                        <select id="classe" name="classe" class="form-select" required>
+                            <option value="" selected disabled>Choisir...</option>
+                            {% for c in classes %}
+                            <option value="{{ c }}">{{ c }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label" for="jour">
+                            <i class="fas fa-calendar-day text-primary"></i> Jour
+                        </label>
+                        <select id="jour" name="jour" class="form-select">
+                            {% for j in jours %}
+                            <option value="{{ j }}">{{ j }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label" for="heure_debut">
+                            <i class="fas fa-clock text-success"></i> Début
+                        </label>
+                        <input type="time" id="heure_debut" name="heure_debut" class="form-control" required>
+                    </div>
+
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label" for="heure_fin">
+                            <i class="fas fa-history text-danger"></i> Fin
+                        </label>
+                        <input type="time" id="heure_fin" name="heure_fin" class="form-control" required>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">
+                        <i class="fas fa-book text-primary"></i> Matière enseignée
+                    </label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light"><i class="fas fa-lock small"></i></span>
+                        <input type="text" class="form-control bg-light" value="{{ enseignant.matiere }}" readonly>
+                    </div>
+                </div>
+
+                <div class="d-grid gap-2 mt-4">
+                    <button type="submit" class="btn btn-primary btn-save">
+                        <i class="fas fa-check-circle me-2"></i> Enregistrer le créneau
+                    </button>
+                    <a href="{% url 'liste_enseignants' %}" class="btn btn-link text-muted text-decoration-none text-center">
+                        <i class="fas fa-arrow-left me-1"></i> Retour à la liste
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+{% endblock %}

@@ -1,0 +1,147 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Export Excel - {{ classe }}</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        body { font-family: "Poppins", sans-serif; background: #f8f9fb; padding: 20px; }
+        .controls { text-align: center; background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        table { width: 100%; border-collapse: collapse; background: white; }
+        th, td { border: 1px solid #ccc; text-align: center; padding: 8px; font-size: 12px; }
+        th { background-color: #eee; }
+        .text-left { text-align: left !important; }
+        button { background: #28a745; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 5px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<h1>{{ school_name }} — {{ classe }} {{ serie_nom }} — T{{ trimestre }}</h1>
+
+<div class="controls">
+    <label><strong>Filtrer par matière :</strong></label>
+    <select id="matiereSelect" onchange="filterByMatiere()">
+        <option value="toutes">Toutes les matières</option>
+        {% for matiere in matieres_base %}
+            <option value="{{ matiere }}">{{ matiere }}</option>
+        {% endfor %}
+    </select>
+    <button onclick="exportExcel()">📊 Télécharger Excel</button>
+</div>
+
+<table id="table_excel">
+    <thead>
+        <tr>
+            <th>Matricule</th>
+            <th>Nom & Prénoms</th>
+            {% for matiere in matieres_base %}
+                {% if matiere == "Conduite" %}
+                    <th class="matiere-col col-{{ matiere|slugify }}">Moy.</th>
+                {% else %}
+                    <th class="matiere-col col-{{ matiere|slugify }}">Moy.int</th>
+                    <th class="matiere-col col-{{ matiere|slugify }}">Dev1</th>
+                    <th class="matiere-col col-{{ matiere|slugify }}">Dev2</th>
+                {% endif %}
+            {% endfor %}
+            <th class="general-col">Moy.T</th>
+            <th class="general-col">Rang</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for result in page_obj %}
+        <tr class="eleve-row" data-matieres="{% for m in result.matieres_list %}{{ m|slugify }} {% endfor %}">
+            <td>{{ result.eleve.matricule }}</td>
+            <td class="text-left"><strong>{{ result.eleve.nom }}</strong> {{ result.eleve.prenoms }}</td>
+
+            {% for mat_ref in matieres_base %}
+                {% with notes_dict=result.matieres_notes %}
+                    {% for mat_nom, details in notes_dict.items %}
+                        {% if mat_nom == mat_ref %}
+                            {% if mat_nom == "Conduite" %}
+                                <td class="matiere-col col-{{ mat_nom|slugify }}">{{ details.m_dev }}</td>
+                            {% else %}
+                                <td class="matiere-col col-{{ mat_nom|slugify }}">{{ details.m_int }}</td>
+                                <td class="matiere-col col-{{ mat_nom|slugify }}">{{ details.m_dev }}</td>
+                                <td class="matiere-col col-{{ mat_nom|slugify }}">{{ details.m_gen }}</td>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                {% endwith %}
+            {% endfor %}
+            <td class="general-col">{{ result.moyenne_trimestrielle }}</td>
+            <td class="general-col">{{ result.rang }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<script>
+    function slugify(text) {
+        return text.toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '-').replace(/[^\w-]+/g, '').replace(/--+/g, '-');
+    }
+
+    function filterByMatiere() {
+        const selectedMatiere = document.getElementById("matiereSelect").value;
+        const slug = slugify(selectedMatiere);
+        const rows = document.querySelectorAll(".eleve-row");
+        const cols = document.querySelectorAll(".matiere-col");
+        const genCols = document.querySelectorAll(".general-col");
+
+        if (selectedMatiere === "toutes") {
+            rows.forEach(r => r.style.display = "");
+            cols.forEach(c => c.style.display = "");
+            genCols.forEach(g => g.style.display = "");
+        } else {
+            rows.forEach(r => {
+                // On affiche la ligne seulement si l'élève a cette matière
+                const hasMatiere = r.getAttribute("data-matieres").split(' ').includes(slug);
+                r.style.display = hasMatiere ? "" : "none";
+            });
+            cols.forEach(c => c.style.display = c.classList.contains("col-" + slug) ? "" : "none");
+            genCols.forEach(g => g.style.display = "none");
+        }
+    }
+function exportExcel() {
+    const selectedMatiere = document.getElementById("matiereSelect").value;
+    const table = document.getElementById("table_excel");
+    
+    // 1. On clone la table pour ne pas modifier l'affichage réel
+    const tableClone = table.cloneNode(true);
+
+    // 2. Supprimer les lignes et colonnes masquées (filtrage)
+    tableClone.querySelectorAll("tr").forEach(tr => { 
+        if (tr.style.display === "none") tr.remove(); 
+    });
+    tableClone.querySelectorAll("th, td").forEach(el => { 
+        if (el.style.display === "none") el.remove(); 
+    });
+
+    // 3. Convertir la table en classeur Excel
+    const wb = XLSX.utils.table_to_book(tableClone, { sheet: "Export_Notes" });
+    const ws = wb.Sheets["Export_Notes"];
+
+    // 4. 🛡️ PROTECTION DU MATRICULE (Éviter l'affichage 5,65E+12)
+    // On récupère la plage de cellules (ex: A1:Z50)
+    if (ws['!ref']) {
+        const range = XLSX.utils.decode_range(ws['!ref']);
+        for (let R = range.s.r + 1; R <= range.e.r; ++R) {
+            // Le matricule est dans la 1ère colonne (Index 0 = Colonne A)
+            const cellAddress = XLSX.utils.encode_cell({ r: R, c: 0 }); 
+            const cell = ws[cellAddress];
+
+            if (cell) {
+                cell.t = 's';           // 's' signifie String (Texte)
+                cell.v = String(cell.v); // On force la valeur en chaîne de caractères
+                cell.z = '@';           // Format de cellule "Texte" pour Excel
+            }
+        }
+    }
+
+    // 5. Téléchargement du fichier
+    const fileName = `Moyennes_${selectedMatiere.replace(/\s+/g, '_')}_T{{ trimestre }}_{{ classe }}.xlsx`;
+    XLSX.writeFile(wb, fileName);
+}
+</script>
+</body>
+</html>

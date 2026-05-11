@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+     {% load static %}
+    <meta charset="utf-8">
+    <link rel="icon" href="{% static 'acady.png' %}" type="image/png" />
+    <title>Résultats Annuels</title>
+    <style>
+        /* Configuration de la page compatible xhtml2pdf */
+        @page {
+            size: a4;
+            margin: 1.5cm;
+        }
+
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 11pt;
+            color: #333333;
+        }
+
+        /* --- Style pour l'affichage Web (Formulaire) --- */
+        .no-pdf {
+            background-color: #f4f7f6;
+            padding: 20px;
+            border: 1px solid #dddddd;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .btn-pdf {
+            display: inline-block;
+            background-color: #e74c3c;
+            color: #ffffff;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        /* --- En-tête du Document --- */
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h2 { 
+            margin: 0; 
+            font-size: 20pt; 
+            color: #2c3e50;
+        }
+        .header h3 { 
+            margin: 10px 0; 
+            font-size: 14pt; 
+            color: #34495e; 
+            border-top: 1px solid #3498db;
+            border-bottom: 1px solid #3498db;
+            padding: 5px 0;
+        }
+
+        /* --- Tableau des Résultats (Structure rigide pour le PDF) --- */
+        table.result-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed; /* Indispensable pour éviter la déformation */
+        }
+        .result-table th {
+            background-color: #2c3e50;
+            color: #ffffff;
+            padding: 8px;
+            font-size: 10pt;
+            border: 1px solid #2c3e50;
+        }
+        .result-table td {
+            padding: 8px 4px;
+            border: 1px solid #bdc3c7;
+            text-align: center;
+        }
+
+        /* Largeurs fixes pour xhtml2pdf */
+        .col-rang { width: 35pt; }
+        .col-nom  { width: 180pt; text-align: left; }
+        .col-sexe { width: 35pt; }
+        .col-note { width: 40pt; }
+        .col-moy  { width: 50pt; }
+        .col-dec  { width: 75pt; }
+
+        .pass { color: #27ae60; font-weight: bold; }
+        .fail { color: #e74c3c; font-weight: bold; }
+        .moyenne-info { font-weight: bold; color: #2980b9; }
+
+        /* --- Section Statistiques (Mise en page par tableau pour le PDF) --- */
+        table.stats-layout {
+            width: 100%;
+            margin-top: 20px;
+        }
+        .card {
+            background-color: #f9f9f9;
+            border: 1px solid #dcdde1;
+            padding: 10px;
+        }
+        .card-title {
+            font-weight: bold;
+            color: #2c3e50;
+            border-bottom: 1px solid #3498db;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .mention-box {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f1f2f6;
+            border-left: 5px solid #f1c40f;
+        }
+    </style>
+</head>
+<body>
+
+{% if not pdf %}
+<div class="no-pdf">
+    <form method="get">
+        <strong>Classe :</strong>
+        <select name="classe" style="padding: 4px;">
+            {% for c in classes %}
+            <option value="{{ c }}" {% if c == classe %}selected{% endif %}>{{ c }}</option>
+            {% endfor %}
+        </select>
+
+        <strong style="margin-left: 10px;">Série :</strong>
+        <select name="serie" style="padding: 4px;">
+            <option value="">-- Toutes --</option>
+            {% for s in series %}
+                {% if s and s != "None" %}
+                <option value="{{ s }}" {% if s == serie %}selected{% endif %}>{{ s }}</option>
+                {% endif %}
+            {% endfor %}
+        </select>
+
+        <strong style="margin-left: 10px;">Année :</strong>
+        <select name="annee" style="padding: 4px;">
+            {% for a in annees %}
+            <option value="{{ a }}" {% if a == annee %}selected{% endif %}>{{ a }}</option>
+            {% endfor %}
+        </select>
+
+        <button type="submit" style="padding: 4px 15px; cursor: pointer;">Afficher</button>
+    </form>
+
+    {% if resultats %}
+    <a href="?classe={{ classe }}&annee={{ annee }}&serie={{ serie|default:'' }}&pdf=1" class="btn-pdf">
+        📄 Générer le Rapport PDF
+    </a>
+    {% endif %}
+</div>
+{% endif %}
+
+<div class="header">
+    <h2>CPEG LE TRÉSOR DE DOWA</h2>
+    <h3>
+        RÉSULTATS ANNUELS — CLASSE {{ classe|upper }} 
+        {% if serie and serie != "None" %} (SÉRIE {{ serie|upper }}) {% endif %} 
+        — {{ annee }}
+    </h3>
+</div>
+
+<table class="result-table">
+    <thead>
+        <tr>
+            <th class="col-rang">RANG</th>
+            <th class="col-nom">NOM & PRÉNOMS</th>
+            <th class="col-sexe">SEXE</th>
+            <th class="col-note">T1</th>
+            <th class="col-note">T2</th>
+            <th class="col-note">T3</th>
+            <th class="col-moy">MOYENNE</th>
+            <th class="col-dec">DÉCISION</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for r in resultats %}
+        <tr>
+            <td><strong>{{ r.rang }}</strong></td>
+            <td style="text-align: left; padding-left: 5px;">{{ r.eleve.nom }} {{ r.eleve.prenoms }}</td>
+            <td>{{ r.sexe }}</td>
+            <td>{{ r.t1 }}</td>
+            <td>{{ r.t2 }}</td>
+            <td>{{ r.t3 }}</td>
+            <td class="moyenne-info">{{ r.moyenne_annuelle }}</td>
+            <td>
+                {% if r.decision == "Passe" %}
+                    <span class="pass">PASSÉ</span>
+                {% else %}
+                    <span class="fail">REDOUBLE</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="8" style="padding: 20px;">Aucun élève trouvé pour cette sélection.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% if stats %}
+<table class="stats-layout">
+    <tr>
+        <td style="padding-right: 10px;">
+            <div class="card">
+                <span class="card-title">📊 Global</span>
+                Effectif : <strong>{{ stats.total }}</strong><br>
+                Admis : <strong>{{ stats.admis }}</strong> ({{ stats.taux_reussite }}%)
+            </div>
+        </td>
+        <td style="padding: 0 5px;">
+            <div class="card">
+                <span class="card-title">👦 Garçons</span>
+                Admis : {{ stats.garcons_admis }} / {{ stats.garcons_total }}<br>
+                Échecs : {{ stats.garcons_redoublants }}
+            </div>
+        </td>
+        <td style="padding-left: 10px;">
+            <div class="card">
+                <span class="card-title">👧 Filles</span>
+                Admises : {{ stats.filles_admises }} / {{ stats.filles_total }}<br>
+                Échecs : {{ stats.filles_redoublantes }}
+            </div>
+        </td>
+    </tr>
+</table>
+
+<div class="mention-box">
+    <strong style="color:#d35400;">🏆 Mentions Spéciales</strong><br>
+    🥇 Major de promotion : {{ stats.premier.eleve.nom }} {{ stats.premier.eleve.prenoms }} ({{ stats.premier.moyenne_annuelle }}/20)<br>
+    🚩 Dernier de classe : {{ stats.dernier.eleve.nom }} {{ stats.dernier.eleve.prenoms }} ({{ stats.dernier.moyenne_annuelle }}/20)
+</div>
+{% endif %}
+
+</body>
+</html>

@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="fr">
+{% load static %}
+<head>
+    <meta charset="utf-8">
+    <link rel="icon" href="{% static 'acady.png' %}" type="image/png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <title>Inscription | Acadynote</title>
+
+    <style>
+        :root {
+            --primary-color: #00c853;
+            --glass-bg: rgba(255, 255, 255, 0.12);
+            --glass-border: rgba(255, 255, 255, 0.2);
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Poppins', sans-serif;
+            background: #0f172a; /* Fond de secours sombre */
+        }
+
+        #particles-js {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at top right, #1e293b, #0f172a);
+            z-index: 0;
+        }
+
+        /* Container principal centré avec scroll si nécessaire */
+        .wrapper {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .form-container {
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 3rem;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            color: white;
+        }
+
+        .form-container h2 {
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 2rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-size: 1.5rem;
+        }
+
+        .form-label {
+            font-size: 0.85rem;
+            font-weight: 400;
+            margin-bottom: 0.5rem;
+            color: #cbd5e1;
+        }
+
+        .form-control {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid var(--glass-border);
+            color: white;
+            border-radius: 10px;
+            padding: 12px 15px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            background: rgba(15, 23, 42, 0.8);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(0, 200, 83, 0.15);
+            color: white;
+        }
+
+        .form-control::placeholder {
+            color: #64748b;
+        }
+
+        /* Personnalisation des inputs file */
+        input[type="file"]::file-selector-button {
+            background: var(--primary-color);
+            border: none;
+            border-radius: 5px;
+            color: white;
+            padding: 5px 10px;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+
+        .btn-success {
+            background: var(--primary-color);
+            border: none;
+            border-radius: 10px;
+            padding: 12px;
+            font-weight: 600;
+            margin-top: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 200, 83, 0.3);
+        }
+
+        .btn-success:hover {
+            background: #00e676;
+            transform: translateY(-2px);
+            box-shadow: 0 15px 20px -3px rgba(0, 200, 83, 0.4);
+        }
+
+        /* Bouton secret reset amélioré */
+        .reset-container {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 10;
+        }
+
+        .reset-button {
+            width: 10px;
+            height: 10px;
+            padding: 0;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.05);
+            border: none;
+            color: transparent;
+            transition: 0.3s;
+        }
+
+        .reset-button:hover {
+            background: #ef4444;
+            width: 40px;
+            height: 40px;
+            color: white;
+        }
+
+        /* Scrollbar élégante */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+    </style>
+</head>
+
+<body>
+    <div id="particles-js"></div>
+
+    <div class="wrapper">
+        <div class="form-container">
+            <h2>Inscription</h2>
+            
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        <label class="form-label" for="username">Nom d'utilisateur</label>
+                        <input type="text" name="username" id="username" class="form-control" placeholder="ex: admin_ecole" required>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="name">Directeur</label>
+                        <input type="text" name="name" id="name" class="form-control" placeholder="Nom complet" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="school_name">École</label>
+                        <input type="text" name="school_name" id="school_name" class="form-control" placeholder="Nom de l'école" required>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="email">Email professionnel</label>
+                    <input type="email" name="email" id="email" class="form-control" placeholder="contact@ecole.com" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="numero">Téléphone</label>
+                    <input type="text" name="numero" id="numero" class="form-control" placeholder="+229 ..." required>
+                </div>
+                               <div class="row">
+    <div class="col-md-6 mb-3">
+        <label class="form-label" for="latitude">Latitude</label>
+        <input type="number" step="any" name="latitude" id="latitude" class="form-control" placeholder="ex: 6.3703" required>
+    </div>
+    <div class="col-md-6 mb-3">
+        <label class="form-label" for="longitude">Longitude</label>
+        <input type="number" step="any" name="longitude" id="longitude" class="form-control" placeholder="ex: 2.3912" required>
+    </div>
+</div>
+                <hr style="border-color: var(--glass-border); margin: 1.5rem 0;">
+
+                <div class="mb-3">
+                    <label class="form-label" for="profile_image">Logo de l'école (PNG/JPG)</label>
+                    <input type="file" name="profile_image" id="profile_image" class="form-control" accept="image/*">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="coin_droit">Image coin supérieur droit</label>
+                    <input type="file" name="coin_droit" id="coin_droit" class="form-control" accept="image/*">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="fond_verso">Image de fond (Verso)</label>
+                    <input type="file" name="fond_verso" id="fond_verso" class="form-control" accept="image/*">
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label" for="password">Mot de passe</label>
+                    <input type="password" name="password" id="password" class="form-control" placeholder="••••••••" required>
+                </div>
+
+                <button type="submit" class="btn btn-success w-100">Créer mon compte</button>
+            </form>
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-danger mt-3 py-2 small">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="reset-container">
+        <button class="reset-button" onclick="confirmReset()" title="Reset">×</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <script>
+        function confirmReset() {
+            if (confirm("⚠️ Action irréversible : Supprimer tous les comptes ?")) {
+                window.location.href = "{% url 'reset_utilisateurs' %}";
+            }
+        }
+
+        particlesJS("particles-js", {
+            particles: {
+                number: { value: 60, density: { enable: true, value_area: 800 } },
+                color: { value: "#ffffff" },
+                shape: { type: "circle" },
+                opacity: { value: 0.2, random: true },
+                size: { value: 3, random: true },
+                line_linked: { enable: true, distance: 150, color: "#ffffff", opacity: 0.1, width: 1 },
+                move: { enable: true, speed: 0.8, direction: "none", random: true, out_mode: "out" }
+            },
+            interactivity: {
+                events: { onhover: { enable: true, mode: "bubble" }, onclick: { enable: true, mode: "push" } },
+                modes: { bubble: { distance: 200, size: 6, duration: 2, opacity: 0.8 } }
+            }
+        });
+    </script>
+</body>
+</html>

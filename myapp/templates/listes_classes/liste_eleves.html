@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block title %} Liste des élèves - {{ affichage_classe }} {% endblock title %} 
+
+{% block content %}
+<style>
+    /* ... Vos styles CSS restent identiques ... */
+    #pdf-content { font-size: 12px; padding: 15px; background: white; }
+    .header-pdf { border-bottom: 2px solid #333; margin-bottom: 20px; padding-bottom: 10px; }
+    /* Ajout d'un style pour éviter de couper les lignes au milieu */
+    tr { page-break-inside: avoid; }
+</style>
+
+<nav class="navbar navbar-light bg-white border-bottom shadow-sm">
+    <div class="container-fluid d-flex justify-content-between">
+        <a class="btn btn-sm btn-outline-secondary" href="{% url 'accueil' %}">
+            <i class="fas fa-arrow-left"></i> Retour
+        </a>
+        <span class="navbar-brand fw-bold text-primary">{{ school_name }}</span>
+        <div></div> </div>
+</nav>
+
+<div class="container mt-3 text-center">
+    <button id="download-pdf" class="btn btn-danger shadow-sm">
+        <i class="fas fa-file-pdf me-2"></i>Télécharger la liste (PDF)
+    </button>
+</div>
+
+<div id="pdf-content">
+    {% if page_obj.number == 1 %}
+    <div class="header-pdf text-center">
+        <h3 class="fw-bold">Liste des élèves : {{ affichage_classe }}</h3>
+        <h5 class="text-muted">Année Scolaire {{ annee_academique }}</h5>
+        
+        <div class="row mt-4 mb-2">
+            <div class="col-4"><strong>Effectif Total:</strong> {{ total_eleves }}</div>
+            <div class="col-4"><strong>Garçons:</strong> {{ total_garcons }}</div>
+            <div class="col-4"><strong>Filles:</strong> {{ total_filles }}</div>
+        </div>
+    </div>
+    {% endif %}
+
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th style="width: 10%;">N°</th>
+                <th style="width: 25%;">Matricule</th>
+                <th style="width: 50%;">Nom & Prénoms</th>
+                <th style="width: 15%;">Sexe</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for eleve in eleves %}
+            <tr>
+                <td>{{ eleve.numero_global }}</td>
+                <td class="fw-bold">{{ eleve.matricule }}</td>
+                <td class="text-start ps-3 text text-center">{{ eleve.nom }} {{ eleve.prenoms }}</td>
+                <td>{{ eleve.sexe }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4">Aucun élève trouvé dans cette classe pour cette année.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+    <nav class="mt-4 d-print-none">
+        <ul class="pagination justify-content-center">
+            {% for num in page_obj.paginator.page_range %}
+                <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script>
+    document.getElementById("download-pdf").addEventListener("click", function () {
+        const element = document.getElementById("pdf-content");
+        
+        // On définit un nom de fichier dynamique
+        const filename = 'Liste_{{ affichage_classe|slugify }}_{{ annee_academique }}.pdf';
+
+        const opt = {
+            margin: [10, 10, 10, 10],
+            filename: filename,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } // Portrait est souvent mieux pour les listes nominatives
+        };
+
+        html2pdf().set(opt).from(element).save();
+    });
+</script>
+{% endblock content %}

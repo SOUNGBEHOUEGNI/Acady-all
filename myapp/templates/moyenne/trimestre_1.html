@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="fr">
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="{% static 'acady.png' %}" type="image/png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau des Moyennes</title>
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <style>
+        body { font-family: 'Roboto', sans-serif; background-color: transparent; margin: 0; }
+        #content { padding: 10px; }
+        h2 { text-align: center; margin: 6px 0; font-size: 17px; }
+        .table th, .table td {
+            border: 1px solid black; padding: 3px 2px; font-size: 10px;
+            text-align: center; vertical-align: middle;
+        }
+        .table th:first-child, .table td:first-child { width: 30px; }
+        .table td:nth-child(2) { width: 180px; text-align: left !important; padding-left: 5px; }
+        .fw-bold-custom { font-weight: bold; background-color: #f8f9fa; }
+        .legend { text-align: center; margin-top: 10px; font-style: italic; font-size: 12px; }
+        .print-button { text-align: center; margin: 15px 0; }
+    </style>
+</head>
+<body>
+    <div class="print-button">
+        <button onclick="downloadPDF()" class="btn btn-primary">Télécharger le Tableau (PDF)</button>
+    </div>
+
+    <div id="content">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div style="width:70px;">{% if profile_image %}<img src="{{ profile_image }}" style="width:100%;">{% endif %}</div>
+            <div class="text-center">
+                <h1 style="font-size: 22px;">{{ school_name }}</h1>
+                <h2 class="text-uppercase">Tableau des Moyennes - Trimestre {{ trimestre }}</h2>
+                <h3>Classe : {{ classe }} {{ serie_nom }} | {{ annee_academique }}</h3>
+            </div>
+            <div style="width:70px;">{% if profile_image %}<img src="{{ profile_image }}" style="width:100%;">{% endif %}</div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-bordered border-dark">
+                <thead class="table-light">
+                    <tr>
+                        <th rowspan="2">#</th>
+                        <th rowspan="2">Nom & Prénoms</th>
+                        {% for matiere in matieres_base %}
+                            <th colspan="3">{{ matiere }}</th>
+                        {% endfor %}
+                        <th rowspan="2">Moy.T</th>
+                        <th rowspan="2">Rang</th>
+                    </tr>
+                    <tr>
+                        {% for matiere in matieres_base %}
+                            <th>Int</th><th>Dev</th><th>Gen</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for resultat in resultats_eleves %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td class="text-uppercase"><strong>{{ resultat.eleve.nom }}</strong> {{ resultat.eleve.prenoms }}</td>
+                            
+                            {% for mat_col in matieres_base %}
+                                {% with notes_dict=resultat.matieres_notes %}
+                                    {# On accède aux données via le dictionnaire préparé en Python #}
+                                    {% for nom_m, data in notes_dict.items %}
+                                        {% if nom_m == mat_col %}
+                                            <td>{{ data.m_int }}</td>
+                                            <td>{{ data.m_dev }}</td>
+                                            <td class="fw-bold-custom">{{ data.m_gen }}</td>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endwith %}
+                            {% endfor %}
+                            
+                            <td class="table-secondary fw-bold">{{ resultat.moyenne_trimestrielle|floatformat:2 }}</td>
+                            <td class="fw-bold">{{ resultat.rang }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr><td colspan="100%">Aucune donnée disponible</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="row mt-3 px-3">
+            <div class="col-6 border-end">
+                <p class="small mb-1"><strong>Moyenne Max :</strong> {{ moyenne_max|floatformat:2 }}</p>
+                <p class="small mb-1"><strong>Moyenne Min :</strong> {{ moyenne_min|floatformat:2 }}</p>
+                <p class="small mb-1"><strong>Effectif :</strong> {{ total_eleves }}</p>
+            </div>
+            <div class="col-6 text-end">
+                <p class="small mb-1"><strong>Moyennes ≥ 10 :</strong> {{ nb_moyenne_sup10 }}</p>
+                <p class="small mb-1"><strong>Taux :</strong> {{ pourcentage_sup10 }}%</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    async function downloadPDF() {
+        const { jsPDF } = window.jspdf;
+        const content = document.getElementById("content");
+        const canvas = await html2canvas(content, { scale: 2, useCORS: true });
+        const imgData = canvas.toDataURL("image/png");
+        const pdf = new jsPDF("landscape", "mm", "a4");
+        const imgWidth = pdf.internal.pageSize.getWidth();
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
+        pdf.save("Tableau_Moyennes_{{ classe }}_T{{ trimestre }}.pdf");
+    }
+    </script>
+</body>
+</html>

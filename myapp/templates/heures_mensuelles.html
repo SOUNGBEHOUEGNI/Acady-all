@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-blue: #2c3e50;
+        --success-green: #27ae60;
+    }
+    .report-card {
+        background: #fff;
+        padding: 20px; /* Réduit pour éviter trop d'espace dans le PDF */
+        border: 1px solid #eee;
+    }
+    .table thead { background-color: var(--primary-blue); color: white; }
+    
+    @media print {
+        .no-print { display: none !important; }
+        .report-card { border: none !important; padding: 0 !important; }
+    }
+</style>
+
+<div class="container py-4">
+
+    <div class="row justify-content-center mb-4 no-print">
+        <div class="col-md-10">
+            <div class="card p-3 shadow-sm border-0 bg-light">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-4">
+                        <label class="small fw-bold">📅 Sélectionner le Mois</label>
+                        <form method="GET" id="monthForm">
+                            <select name="mois" class="form-select border-primary" onchange="this.form.submit()">
+                                <option value="">Année Complète</option>
+                                {% for mois in mois_options %}
+                                    <option value="{{ mois.num }}" {% if mois_filter == mois.num %}selected{% endif %}>
+                                        {{ mois.nom }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </form>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="small fw-bold">💰 Taux Horaire (FCFA)</label>
+                        <input type="number" id="tauxHoraire" class="form-control border-primary" placeholder="Ex: 2500">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="small fw-bold">📉 Impôt (%)</label>
+                        <input type="number" id="tauxImpot" class="form-control border-danger" value="0">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="zonePDF" style="background: white; padding: 10px;">
+        <div class="report-card">
+            <div class="text-center mb-4">
+                <h2 class="fw-bold mb-0" style="color: #2c3e50;">CPEG LE TRÉSOR DE DOWA</h2>
+                <p class="text-muted text-uppercase mb-2" style="letter-spacing: 2px; font-size: 0.9rem;">Rapport de Paie des Enseignants</p>
+                
+                <span class="badge bg-white text-dark border px-4 py-2" style="font-size: 1.1rem;">
+                    Période : 
+                    <strong class="text-primary text-uppercase">
+                        {% if mois_filter %}
+                            {% for mois in mois_options %}
+                                {% if mois.num == mois_filter %}{{ mois.nom }}{% endif %}
+                            {% endfor %}
+                        {% else %}
+                            Année Scolaire
+                        {% endif %}
+                    </strong>
+                </span>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-bordered align-middle text-center" style="width:100%; border-collapse: collapse;">
+                    <thead style="background-color: #2c3e50; color: white;">
+                        <tr>
+                            <th class="text-start" style="padding: 12px;">Enseignant</th>
+                            <th>Classes</th>
+                            <th>H. Total</th>
+                            <th>Brut</th>
+                            <th>Impôt</th>
+                            <th style="background-color: #27ae60;">Net à Payer</th>
+                        </tr>
+                    </thead>
+                    <tbody id="payrollBody">
+                        {% for id, data in heures_par_enseignant.items %}
+                        <tr>
+                            <td class="text-start ps-3">
+                                <strong>{{ data.enseignant.nom }}</strong><br>
+                                <small class="text-muted">{{ data.enseignant.prenoms }}</small>
+                            </td>
+                            <td class="small">{{ data.classes }}</td>
+                            <td class="fw-bold row-heures" data-h="{{ data.total_heures }}">
+                                {{ data.total_heures|floatformat:2 }} h
+                            </td>
+                            <td class="row-brut">0 F</td>
+                            <td class="row-impot text-danger">0 F</td>
+                            <td class="row-net fw-bold text-success">0 FCFA</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot class="table-dark">
+                        <tr style="font-size: 1.1rem;">
+                            <td colspan="2" class="text-end">RÉCAPITULATIF</td>
+                            <td id="totalH">0 h</td>
+                            <td colspan="2" class="text-end small">TOTAL NET :</td>
+                            <td id="totalM" class="text-warning fw-bold">0 FCFA</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center mt-4 no-print">
+        <a href="{% url 'accueil' %}" class="btn btn-outline-secondary rounded-pill px-4 me-2">Retour</a>
+        <button id="btnPDF" class="btn btn-danger btn-lg rounded-pill px-5 shadow">
+            <i class="bi bi-file-earmark-pdf"></i> Générer le PDF
+        </button>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script>
+    const inputH = document.getElementById('tauxHoraire');
+    const inputI = document.getElementById('tauxImpot');
+
+    function recalculer() {
+        const th = parseFloat(inputH.value) || 0;
+        const ti = parseFloat(inputI.value) || 0;
+        let tH = 0, tM = 0;
+
+        document.querySelectorAll('#payrollBody tr').forEach(row => {
+            const h = parseFloat(row.querySelector('.row-heures').dataset.h);
+            const brut = h * th;
+            const imp = brut * (ti / 100);
+            const net = brut - imp;
+
+            row.querySelector('.row-brut').innerText = brut.toLocaleString() + " F";
+            row.querySelector('.row-impot').innerText = "-" + imp.toLocaleString();
+            row.querySelector('.row-net').innerText = net.toLocaleString() + " F";
+
+            tH += h;
+            tM += net;
+        });
+
+        document.getElementById('totalH').innerText = tH.toFixed(2) + " h";
+        document.getElementById('totalM').innerText = tM.toLocaleString() + " FCFA";
+    }
+
+    inputH.oninput = recalculer;
+    inputI.oninput = recalculer;
+
+    // Script PDF Corrigé (Espace et Rendu)
+    document.getElementById("btnPDF").onclick = function() {
+        const element = document.getElementById("zonePDF");
+        
+        // On récupère le nom du mois pour le nom du fichier
+        const moisLabel = document.querySelector('strong.text-primary').innerText.trim();
+
+        const opt = {
+            margin: [0.3, 0.3, 0.3, 0.3], // Marges égales
+            filename: `Rapport_Paie_${moisLabel}.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { 
+                scale: 2, 
+                useCORS: true,
+                scrollY: 0, // Force le départ en haut de l'élément
+                windowWidth: document.documentElement.offsetWidth
+            },
+            jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+        };
+
+        html2pdf().set(opt).from(element).save();
+    };
+</script>
+{% endblock %}

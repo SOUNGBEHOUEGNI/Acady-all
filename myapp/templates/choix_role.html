@@ -1,0 +1,219 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acadynote | Portail Premium</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --accent: #22d3ee;
+            --bg: #030712;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+
+        body {
+            min-height: 100vh;
+            background-color: var(--bg);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(34, 211, 238, 0.15) 0px, transparent 50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        /* Animation de fond subtile */
+        body::before {
+            content: "";
+            position: absolute;
+            width: 200%; height: 200%;
+            background-image: url("https://grainy-gradients.vercel.app/noise.svg");
+            opacity: 0.05;
+            z-index: -1;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 850px;
+            position: relative;
+        }
+
+        header { margin-bottom: 60px; text-align: center; }
+
+        h1 { 
+            font-size: clamp(2rem, 8vw, 3.5rem); 
+            font-weight: 800; 
+            letter-spacing: -2px;
+            background: linear-gradient(to right, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle { 
+            color: var(--accent); 
+            font-size: 0.9rem; 
+            font-weight: 700; 
+            text-transform: uppercase; 
+            letter-spacing: 4px;
+            margin-top: 10px;
+        }
+
+        /* Grille des Rôles */
+        .roles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .role-card {
+            position: relative;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 32px;
+            padding: 50px 40px;
+            text-decoration: none;
+            color: white;
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+            backdrop-filter: blur(20px);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Effet de brillance au survol */
+        .role-card::after {
+            content: "";
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+            transition: 0.5s;
+        }
+
+        .role-card:hover::after { left: 100%; }
+
+        .role-card:hover {
+            transform: translateY(-12px) scale(1.02);
+            background: rgba(255, 255, 255, 0.06);
+            border-color: var(--accent);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .icon-box {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            margin-bottom: 25px;
+            color: var(--accent);
+            transition: 0.4s;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .role-card:hover .icon-box {
+            background: var(--accent);
+            color: var(--bg);
+            transform: rotate(-10deg) scale(1.1);
+        }
+
+        h2 { font-size: 1.8rem; font-weight: 700; margin-bottom: 10px; }
+
+        .tag {
+            font-size: 0.75rem;
+            background: rgba(255,255,255,0.1);
+            padding: 4px 12px;
+            border-radius: 20px;
+            margin-bottom: 25px;
+            color: #94a3b8;
+        }
+
+        .btn-portal {
+            width: 100%;
+            padding: 16px;
+            background: transparent;
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 18px;
+            color: white;
+            font-weight: 800;
+            text-align: center;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .role-card:hover .btn-portal {
+            background: white;
+            color: var(--bg);
+            border-color: white;
+        }
+
+        footer {
+            margin-top: 60px;
+            text-align: center;
+            font-size: 0.75rem;
+            color: #4b5563;
+            letter-spacing: 2px;
+        }
+
+        /* Mobile Optimization */
+        @media (max-width: 480px) {
+            .roles-grid { grid-template-columns: 1fr; }
+            .role-card { padding: 40px 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>ACADYNOTE</h1>
+            <p class="subtitle">Choisissez votre espace de travail</p>
+        </header>
+
+        <div class="roles-grid">
+            <a href="{% url 'login' %}" class="role-card">
+                <div class="icon-box"><i class="fas fa-fingerprint"></i></div>
+                <span class="tag">ADMINISTRATION</span>
+                <h2>Direction</h2>
+                <div class="btn-portal">
+                    ENTRER <i class="fas fa-arrow-right"></i>
+                </div>
+            </a>
+
+            <a href="{% url 'enseignant_login' %}" class="role-card">
+                <div class="icon-box"><i class="fas fa-atom"></i></div>
+                <span class="tag">PÉDAGOGIE</span>
+                <h2>Enseignant</h2>
+                <div class="btn-portal">
+                    ENTRER <i class="fas fa-arrow-right"></i>
+                </div>
+            </a>
+        </div>
+
+        <footer>
+    <div class="container text-center">
+        <p class="mb-2 fw-800 text-primary">ACADYNOTE</p>
+        <p class="text-muted small">© 2026 — Plateforme de Gestion Scolaire Intelligente</p>
+        <div class="d-flex justify-content-center gap-3 mt-3">
+        </div>
+    </div>
+</footer>
+    </div>
+
+</body>
+</html>

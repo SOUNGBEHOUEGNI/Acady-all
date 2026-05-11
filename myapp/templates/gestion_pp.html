@@ -1,0 +1,200 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    :root {
+        --primary: #2563eb;
+        --primary-light: #dbeafe;
+        --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+    }
+
+    body {
+        background-color: #f8fafc;
+    }
+
+    .card {
+        border-radius: 20px;
+        border: 1px solid #f1f5f9;
+        box-shadow: var(--card-shadow);
+    }
+
+    .btn-warning {
+        background-color: #f59e0b;
+        color: white;
+        border: none;
+    }
+
+    .btn-warning:hover {
+        background-color: #d97706;
+        color: white;
+    }
+
+    .btn-back {
+        text-decoration: none;
+        color: #64748b;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: 0.3s;
+    }
+
+    .btn-back:hover {
+        color: var(--primary);
+    }
+
+    .table thead {
+        background-color: #f8fafc;
+    }
+
+    .badge-active {
+        background-color: #d1fae5;
+        color: #065f46;
+        border: 1px solid #10b981;
+    }
+
+    .school-title-sm {
+        font-weight: 800;
+        background: linear-gradient(135deg, #1e293b 0%, #2563eb 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+</style>
+
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <a href="{% url 'accueil' %}" class="btn-back">
+                <i class="fas fa-arrow-left me-2"></i>Retour au tableau de bord
+            </a>
+            <h2 class="school-title-sm mt-2">Gestion des Professeurs Principaux</h2>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card h-100">
+                <div class="card-header bg-dark text-white p-4 rounded-top-4 border-0">
+                    <h5 class="mb-0 text-center">
+                        <i class="fas fa-user-tie me-2 text-warning"></i>Nouvelle Assignation
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted text-uppercase">Enseignant</label>
+                            <select name="enseignant" class="form-select border-2" required>
+                                <option value="">Choisir un enseignant...</option>
+                                {% for e in enseignants %}
+                                    <option value="{{ e.id }}">
+                                        {{ e.nom|upper }} {{ e.prenoms }}
+                                    </option>
+                                {% empty %}
+                                    <option value="" disabled>Aucun enseignant trouvé</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted text-uppercase">Classe</label>
+                            <select name="classe" id="classeSelect" class="form-select border-2" onchange="updateSeries()" required>
+                                <option value="">Choisir la classe...</option>
+                                {% for c in classes %}
+                                    <option value="{{ c }}">{{ c }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3" id="serieDiv" style="display:none;">
+                            <label class="form-label small fw-bold text-primary text-uppercase">Série spécifique</label>
+                            <select name="serie" id="serieSelect" class="form-select border-2 border-primary">
+                                </select>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label small fw-bold text-muted text-uppercase">Année Scolaire</label>
+                            <input type="text" name="annee_academique" class="form-control border-2" value="2025-2026" required>
+                        </div>
+
+                        <button type="submit" class="btn btn-warning w-100 py-3 fw-bold rounded-pill shadow-sm">
+                            <i class="fas fa-save me-2"></i>Enregistrer l'assignation
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card h-100 border-0">
+                <div class="card-header bg-white p-4 border-bottom">
+                    <h5 class="mb-0 fw-bold"><i class="fas fa-list-ul me-2 text-primary"></i>Assignations Actuelles</h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr class="text-muted small text-uppercase">
+                                <th class="ps-4">Classe / Série</th>
+                                <th>Enseignant Responsable</th>
+                                <th>Année</th>
+                                <th class="text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+    {% for a in assignations %}
+    <tr>
+        <td class="ps-4">
+            <span class="fw-bold text-dark">{{ a.classe }}</span> 
+            {% if a.serie %}<span class="badge bg-primary-light text-primary ms-1">{{ a.serie }}</span>{% endif %}
+        </td>
+        <td>{{ a.enseignant.nom|upper }} {{ a.enseignant.prenoms }}</td>
+        <td class="text-muted small">{{ a.annee_academique }}</td>
+        
+        <td class="text-center">
+            <a href="{% url 'supprimer_pp' a.id %}" 
+               class="btn btn-link text-danger p-0" 
+               onclick="return confirm('Voulez-vous vraiment supprimer cette assignation ?');">
+                <i class="fas fa-trash-alt fa-lg"></i>
+            </a>
+        </td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="4" class="text-center py-4 text-muted">Aucune assignation trouvée.</td>
+    </tr>
+    {% endfor %}
+</tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Les données des séries passées par Django
+    const seriesMapping = {{ series_par_classe|safe }};
+
+    function updateSeries() {
+        const classe = document.getElementById('classeSelect').value;
+        const serieDiv = document.getElementById('serieDiv');
+        const serieSelect = document.getElementById('serieSelect');
+
+        if (seriesMapping[classe]) {
+            serieDiv.style.display = 'block';
+            serieSelect.innerHTML = '<option value="">Choisir la série...</option>';
+            seriesMapping[classe].forEach(s => {
+                let option = document.createElement('option');
+                option.value = s;
+                option.textContent = 'Série ' + s;
+                serieSelect.appendChild(option);
+            });
+            serieSelect.required = true;
+        } else {
+            serieDiv.style.display = 'none';
+            serieSelect.innerHTML = '';
+            serieSelect.required = false;
+        }
+    }
+</script>
+{% endblock %}

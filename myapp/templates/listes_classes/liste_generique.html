@@ -1,0 +1,228 @@
+{% extends 'base.html' %}
+
+{% block title %} Liste des élèves - {{ affichage_classe }} {% endblock title %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-blue: #2563eb;
+        --secondary-bg: #f8fafc;
+    }
+    body { background-color: var(--secondary-bg); }
+
+    /* Navigation Modernisée */
+    .navbar-custom {
+        background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        border-radius: 0 0 15px 15px;
+    }
+
+    /* En-tête de page */
+    .page-header {
+        background: white;
+        padding: 2rem;
+        border-radius: 15px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        margin-bottom: 2rem;
+    }
+
+    /* Styles du tableau */
+    .table-container {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
+    .table thead {
+        background-color: #f1f5f9;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.05em;
+    }
+    .photo-eleve {
+        width: 45px;
+        height: 45px;
+        object-fit: cover;
+        border-radius: 50%;
+        border: 2px solid #e2e8f0;
+    }
+
+    /* Boutons et Badges */
+    .btn-action {
+        border-radius: 8px;
+        transition: all 0.2s;
+        font-weight: 500;
+    }
+    .btn-action:hover { transform: translateY(-1px); }
+    
+    .badge-trimestre {
+        padding: 5px 12px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 0.8rem;
+        transition: background 0.2s;
+    }
+    .badge-trimestre:hover { background-color: var(--primary-blue); color: white !important; }
+</style>
+
+<nav class="navbar navbar-expand-lg navbar-dark navbar-custom mb-4">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="{% url 'accueil' %}"><i class="fas fa-school me-2"></i>{{ school_name }}</a>
+        
+        {% if serie and serie != "Aucune" %}
+    <a href="{% url 'generer_cartes_pdf' classe=classe serie=serie annee_academique=annee %}" class="btn btn-primary">
+        Imprimer les Cartes
+    </a>
+{% else %}
+    <a href="{% url 'generer_cartes_pdf' classe=classe annee_academique=annee %}" class="btn btn-primary">
+        Imprimer les Cartes
+    </a>
+{% endif %}
+
+        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                {% for t in "123"|make_list %}
+                <li class="nav-item dropdown px-2">
+                    <a class="nav-link dropdown-toggle text-white" href="#" data-bs-toggle="dropdown">
+                        Trimestre {{ t }}
+                    </a>
+                    <ul class="dropdown-menu border-0 shadow-sm">
+                        <li><a class="dropdown-item" href="{% if serie %}{% url 'trimestre_'|add:t|add:'_serie' classe=classe serie=serie annee_academique=annee_academique %}{% else %}{% url 'trimestre_'|add:t classe=classe annee_academique=annee_academique %}{% endif %}"><i class="fas fa-file-pdf text-danger me-2"></i>PDF</a></li>
+                        <li>
+        <a class="dropdown-item" href="{% url 'affiche_moy_excel_generique' classe=classe annee_academique=annee_academique trimestre=t serie=serie %}">
+            <i class="fas fa-file-excel text-success me-2"></i>Excel
+        </a>
+    </li>
+                    </ul>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container pb-5">
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <h2 class="fw-bold text-dark mb-0">
+                Gestion de la <span class="text-primary">{{ affichage_classe }}</span>
+            </h2>
+            
+            <div class="btn-group shadow-sm" role="group">
+                <span class="btn btn-dark disabled">
+                    <i class="fas fa-file-pdf me-2"></i> Bulletins :
+                </span>
+                {% for t in "123"|make_list %}
+                <a href="{% if serie %}{% url 'telecharger_tous_bulletins_serie' classe=classe serie=serie trimestre=t %}{% else %}{% url 'telecharger_tous_bulletins' classe=classe trimestre=t %}{% endif %}" class="btn btn-outline-danger">T{{ t }}</a>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <form method="GET" class="row g-2 justify-content-center mt-4">
+            <div class="col-auto">
+                <input type="text" name="annee" class="form-control form-control-lg shadow-sm" style="border-radius: 10px;" placeholder="Année (ex: 2024-2025)" value="{{ annee_academique }}">
+            </div>
+            <div class="col-auto">
+                <button class="btn btn-primary btn-lg shadow-sm px-4" style="border-radius: 10px;" type="submit">Charger</button>
+            </div>
+        </form>
+
+        <div class="mt-4 d-flex flex-wrap justify-content-center gap-2">
+            {% if serie %}
+            <a href="{% url 'liste_eleves_serie_pdf' classe=classe serie=serie annee_academique=annee_academique %}" class="btn btn-outline-dark btn-action"><i class="fas fa-list me-2"></i>Liste PDF</a>
+            {% else %}
+            <a href="{% url 'liste_eleves_pdf' classe=classe annee_academique=annee_academique %}" class="btn btn-outline-dark btn-action"><i class="fas fa-list me-2"></i>Liste PDF</a>
+            {% endif %}
+
+            <a href="{% if serie %}{% url 'fiche_notes_detail_serie' classe=classe serie=serie annee_academique=annee_academique %}{% else %}{% url 'fiche_notes_detail' classe=classe annee_academique=annee_academique %}{% endif %}" class="btn btn-outline-dark btn-action"><i class="fas fa-eye me-2"></i>Voir Notes</a>
+            
+            <a href="{% if serie %}{% url 'fiche_note_serie' classe=classe serie=serie annee_academique=annee_academique %}{% else %}{% url 'fiche_note' classe=classe annee_academique=annee_academique %}{% endif %}" class="btn btn-outline-dark btn-action"><i class="fas fa-file-invoice me-2"></i>Fiches</a>
+            
+            <a href="{% if serie %}
+            {% url 'inserer_notes_classe_serie' classe=classe serie=serie annee_academique=annee_academique %}
+         {% else %}
+            {% url 'inserer_notes_classe' classe=classe annee_academique=annee_academique %}
+         {% endif %}" 
+   class="btn btn-info btn-action text-white">
+   <i class="fas fa-pen me-2"></i>Insérer Notes
+</a>
+        </div>
+    </div>
+
+    <div class="alert bg-white border shadow-sm text-center py-4 mb-4" style="border-radius: 15px;">
+        <h6 class="text-muted fw-bold mb-3 uppercase">Envoi des résultats par Email</h6>
+        <div class="d-flex justify-content-center gap-3">
+            {% for t in "123"|make_list %}
+            <a href="{% if serie %}{% url 'envoyer_notes_serie' classe=classe serie=serie annee_academique=annee_academique %}{% else %}{% url 'envoyer_notes' classe=classe annee_academique=annee_academique %}{% endif %}?trimestre={{ t }}" class="btn btn-sm btn-outline-primary px-3 rounded-pill">Trimestre {{ t }}</a>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="table-container">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr class="text-muted">
+                        <th class="ps-4">N°</th>
+                        <th class="text-center">N° Educmaster</th>
+                        <th>Élève</th>
+                        <th class="text-center">Sexe</th>
+                        <th class="text-end pe-4">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for eleve in eleves %}
+                    <tr>
+                        <td class="ps-4 fw-bold text-muted">{{ forloop.counter }}</td>
+                        <td class="text-center">{{ eleve.matricule }}</td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="me-3">
+                                    {% if eleve.profile_eleve %}
+                                        <img src="{{ eleve.profile_eleve.url }}" class="photo-eleve shadow-sm">
+                                    {% else %}
+                                        <div class="photo-eleve bg-light d-flex align-items-center justify-content-center text-muted small">N/A</div>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <div class="fw-bold text-dark">{{ eleve.nom }} {{ eleve.prenoms }}</div>
+                                    <div class="small text-muted">{{ eleve.annee_academique }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge {% if eleve.sexe == 'M' %}bg-soft-blue text-primary{% else %}bg-soft-pink text-danger{% endif %} rounded-pill px-3">
+                                {{ eleve.sexe }}
+                            </span>
+                        </td>
+                        <td class="text-end pe-4">
+                            <div class="dropdown">
+                                <button class="btn btn-light btn-sm rounded-circle" data-bs-toggle="dropdown">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                                <ul class="dropdown-menu border-0 shadow">
+                                    <li><a class="dropdown-item" href="{% url 'modifier_eleve' annee=annee_academique classe=eleve.classe eleve_id=eleve.id %}"><i class="fas fa-edit me-2"></i>Modifier</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'choisir_trimestre' eleve_id=eleve.id %}"><i class="fas fa-paper-plane me-2 text-primary"></i>Envoyer notes</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item text-danger" href="{% url 'supprimer_eleve' eleve.id %}" onclick="return confirm('Supprimer définitivement cet élève ?');"><i class="fas fa-trash me-2"></i>Supprimer</a></li>
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<style>
+    .bg-soft-blue { background-color: #e0e7ff; }
+    .bg-soft-pink { background-color: #fce7f3; }
+</style>
+{% endblock content %}
